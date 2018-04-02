@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 隐射domin对象 -->
+<mapper namespace="com.cmp.core.cloud.dao.CloudDao">
+
+	<!-- 格式化对象 -->
+	<resultMap type="CloudEntity" id="CloudEntity">
+		<result column="cloud_id" property="cloudId"/>
+		<result column="cloud_name" property="cloudName"/>
+		<result column="cloud_type" property="cloudType"/>
+		<result column="cloud_protocol" property="cloudProtocol"/>
+		<result column="cloud_ip" property="cloudIp"/>
+		<result column="cloud_port" property="cloudPort"/>
+		<result column="status" property="status"/>
+		<result column="description" property="description"/>
+	</resultMap>
+
+	<!-- 获取所有云实体 -->
+	<select id="describeClouds" resultMap="CloudEntity">
+		 select * from tbl_cloud
+	</select>
+
+	<!-- 通过id获取指定云实体 -->
+	<select id="describeCloudById" parameterType="String" resultMap="CloudEntity">
+		select * from tbl_cloud where cloud_id=#{cloudId}
+	</select>
+
+	<!-- 通过name获取指定云实体 -->
+	<select id="describeCloudByName" parameterType="String" resultMap="CloudEntity">
+		select * from tbl_cloud where cloud_name=#{cloudName}
+	</select>
+
+</mapper>
