@@ -1,6 +1,6 @@
 package com.cmp.core.common;
 
-import com.cmp.core.cloud.entity.CloudEntity;
+import com.cmp.core.cloud.model.CloudEntity;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.MultiValueMap;
@@ -33,7 +33,7 @@ public class HttpEntityUtil {
         headers.set(ACCEPT, HTTP_MSG_TYPE);
         headers.set(CONTENT_TYPE, HTTP_MSG_TYPE);
         if (null != cloud) {
-            headers.set(HEADER_CLOUD_INFO, cloud.toString());
+            headers.set(HEADER_CLOUD_INFO, JsonUtil.objectToString(cloud));
         }
     }
 

@@ -1,23 +1,17 @@
-package com.cmp.core.cloud.entity;
+package com.cmp.core.cloud.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.xml.internal.ws.developer.Serialization;
 
 import javax.servlet.http.HttpServletRequest;
 
 public class BaseCloudEntity {
 
-    @JsonProperty("auth_info")
     private String authInfo;
 
-    @JsonProperty("user_ip")
     private String userIp;
 
-    @JsonProperty("user_id")
     private String userId;
 
-    @JsonProperty("user_name")
     private String userName;
 
     @JsonIgnore

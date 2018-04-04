@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 隐射domin对象 -->
+<mapper namespace="com.cmp.core.cloud.dao.CloudDao">
+
+    <!-- 格式化云对象 -->
+    <resultMap type="CloudEntity" id="CloudEntity">
+        <result column="cloud_id" property="cloudId"/>
+        <result column="cloud_name" property="cloudName"/>
+        <result column="cloud_type" property="cloudType"/>
+        <result column="cloud_protocol" property="cloudProtocol"/>
+        <result column="cloud_ip" property="cloudIp"/>
+        <result column="cloud_port" property="cloudPort"/>
+        <result column="status" property="status"/>
+        <result column="description" property="description"/>
+    </resultMap>
+
+    <!-- 格式化云类型对象 -->
+    <resultMap type="CloudTypeEntity" id="CloudTypeEntity">
+        <result column="id" property="id"/>
+        <result column="type_name" property="typeName"/>
+        <result column="type_value" property="typeValue"/>
+        <result column="disable" property="disable"/>
+    </resultMap>
+
+    <!-- 格式化适配器对象 -->
+    <resultMap type="CloudAdapterEntity" id="CloudAdapterEntity">
+        <result column="id" property="id"/>
+        <result column="adapter_name" property="adapterName"/>
+        <result column="adapter_protocol" property="adapterProtocol"/>
+        <result column="adapter_ip" property="adapterIp"/>
+        <result column="adapter_port" property="adapterPort"/>
+        <result column="description" property="description"/>
+        <result column="cloud_type" property="cloudType"/>
+    </resultMap>
+
+    <!-- 获取所有云实体 -->
+    <select id="describeClouds" resultMap="CloudEntity">
+		 select * from tbl_cloud
+	</select>
+
+    <!-- 通过id获取指定云实体 -->
+    <select id="describeCloudById" parameterType="String" resultMap="CloudEntity">
+		select * from tbl_cloud where cloud_id=#{cloudId}
+	</select>
+
+    <!-- 通过name获取指定云实体 -->
+    <select id="describeCloudByName" parameterType="String" resultMap="CloudEntity">
+		select * from tbl_cloud where cloud_name=#{cloudName}
+	</select>
+
+    <!-- 通过id删除指定云实体 -->
+    <select id="deleteCloudById" parameterType="String">
+		delete * from tbl_cloud where cloud_id=#{cloudId}
+	</select>
+
+    <!--TODO-->
+    <!-- 添加云实体 -->
+    <select id="addCloud" parameterType="CloudEntity">
+-- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+	</select>
+
+    <!--TODO-->
+    <!-- 更新云实体 -->
+    <select id="updateCloud" parameterType="CloudEntity">
+		-- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+	</select>
+
+    <!-- 获取所有云类型实体 -->
+    <select id="describeCloudTypes" resultMap="CloudTypeEntity">
+        select * from tbl_cloud_type
+    </select>
+
+    <!--TODO-->
+    <!-- 更新云类型实体 -->
+    <select id="updateCloudType" parameterType="CloudTypeEntity">
+        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+    </select>
+
+    <!-- 根据云类型查询云适配组件 -->
+    <select id="describeCloudAdapterByCloudType" parameterType="String" resultMap="CloudAdapterEntity">
+        select * from tbl_cloud_adapter where cloud_type=#{cloudType}
+    </select>
+
+</mapper>

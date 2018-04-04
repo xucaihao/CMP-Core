@@ -1,7 +1,5 @@
 package com.cmp.core.user.modle;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * cmp用户实体
  *
@@ -9,15 +7,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class CmpUser {
 
-    @JsonProperty("user_id")
     private String userId;
 
-    @JsonProperty("user_name")
     private String userName;
 
     private String password;
 
     private Role role;
+
+    private String roleName;
 
     private String token;
 
@@ -55,6 +53,14 @@ public class CmpUser {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public String getToken() {

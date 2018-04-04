@@ -1,6 +1,4 @@
-package com.cmp.core.cloud.entity;
-
-import java.sql.Timestamp;
+package com.cmp.core.cloud.model;
 
 public class CloudAdapterEntity {
 
@@ -17,10 +15,6 @@ public class CloudAdapterEntity {
     private String description;
 
     private String cloudType;
-
-    private Timestamp createdTime;
-
-    private Timestamp updatedTime;
 
     public String getId() {
         return id;
@@ -76,21 +70,5 @@ public class CloudAdapterEntity {
 
     public void setCloudType(String cloudType) {
         this.cloudType = cloudType;
-    }
-
-    public Timestamp getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public Timestamp getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Timestamp updatedTime) {
-        this.updatedTime = updatedTime;
     }
 }

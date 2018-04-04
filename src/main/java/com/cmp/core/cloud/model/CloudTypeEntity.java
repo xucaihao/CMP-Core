@@ -1,6 +1,4 @@
-package com.cmp.core.cloud.entity;
-
-import java.sql.Timestamp;
+package com.cmp.core.cloud.model;
 
 public class CloudTypeEntity {
 
@@ -11,8 +9,6 @@ public class CloudTypeEntity {
     private String typeValue;
 
     private boolean disable;
-
-    private Timestamp update;
 
     public String getId() {
         return id;
@@ -44,13 +40,5 @@ public class CloudTypeEntity {
 
     public void setDisable(boolean disable) {
         this.disable = disable;
-    }
-
-    public Timestamp getUpdate() {
-        return update;
-    }
-
-    public void setUpdate(Timestamp update) {
-        this.update = update;
     }
 }
