@@ -1,25 +1,19 @@
-package com.cmp.core.cloud.entity;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+package com.cmp.core.cloud.model;
 
 public class CloudEntity extends BaseCloudEntity {
 
-    @JsonProperty("cloud_id")
     private String cloudId;
 
-    @JsonProperty("cloud_name")
     private String cloudName;
 
-    @JsonProperty("cloud_type")
     private String cloudType;
 
-    @JsonProperty("cloud_protocol")
+    private String visibility;
+
     private String cloudProtocol;
 
-    @JsonProperty("cloud_ip")
     private String cloudIp;
 
-    @JsonProperty("cloud_port")
     private String cloudPort;
 
     private String status;
@@ -48,6 +42,14 @@ public class CloudEntity extends BaseCloudEntity {
 
     public void setCloudType(String cloudType) {
         this.cloudType = cloudType;
+    }
+
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
     }
 
     public String getCloudProtocol() {
@@ -92,15 +94,13 @@ public class CloudEntity extends BaseCloudEntity {
 
     @Override
     public String toString() {
-        return "CloudEntity{" +
-                "cloudId='" + cloudId + '\'' +
+        return "cloudId='" + cloudId + '\'' +
                 ", cloudName='" + cloudName + '\'' +
                 ", cloudType='" + cloudType + '\'' +
                 ", cloudProtocol='" + cloudProtocol + '\'' +
                 ", cloudIp='" + cloudIp + '\'' +
                 ", cloudPort='" + cloudPort + '\'' +
                 ", status='" + status + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+                ", description='" + description;
     }
 }

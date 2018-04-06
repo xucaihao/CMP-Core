@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 隐射domin对象 -->
+<mapper namespace="com.cmp.core.user.dao.UserDao">
+
+    <!-- 格式化用户对象 -->
+    <resultMap type="CmpUser" id="CmpUser">
+        <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="role_name" property="roleName"/>
+        <result column="token" property="token"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+    </resultMap>
+
+    <!-- 获取所有用户实体 -->
+    <select id="describeCmpUsers" resultMap="CmpUser">
+        select * from tbl_user
+    </select>
+
+    <!-- 通过id获取指定用户实体 -->
+    <select id="describeUserById" parameterType="String" resultMap="CmpUser">
+        select * from tbl_user where user_id=#{userId}
+    </select>
+
+    <!-- 通过id删除指定用户实体 -->
+    <select id="deleteUser" parameterType="String">
+        delete * from tbl_user where user_id=#{userId}
+    </select>
+
+    <!--TODO-->
+    <!-- 添加用户实体 -->
+    <select id="addUser" parameterType="CmpUser">
+        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+    </select>
+
+    <!--TODO-->
+    <!-- 更新用户实体 -->
+    <select id="updateUser" parameterType="CmpUser">
+        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+    </select>
+
+    <!-- 格式化用户映射对象 -->
+    <resultMap type="UserMappingEntity" id="UserMappingEntity">
+        <result column="id" property="id"/>
+        <result column="cmp_user_name" property="cmpUserName"/>
+        <result column="cmp_user_id" property="cmpUserId"/>
+        <result column="access_key" property="accessKey"/>
+        <result column="auth_info" property="authInfo"/>
+        <result column="cloud_id" property="cloudId"/>
+    </resultMap>
+
+    <!-- 根据id查询映射关系 -->
+    <select id="describeUserMappingById" parameterType="String" resultMap="UserMappingEntity">
+        select * from tbl_user_mapping where id=#{mappingId}
+    </select>
+
+    <!-- 根据用户id查询映射关系 -->
+    <select id="describeUserMappingsByCmpUserId" parameterType="String" resultMap="UserMappingEntity">
+       select * from tbl_user_mapping where cmp_user_id=#{cmpUserId}
+    </select>
+
+    <!--TODO-->
+    <!-- 添加用户映射 -->
+    <select id="addUserMapping" parameterType="UserMappingEntity">
+        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+    </select>
+
+    <!--TODO-->
+    <!-- 更新用户映射 -->
+    <select id="updateUserMapping" parameterType="UserMappingEntity">
+        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
+    </select>
+
+    <!-- 根据用户id删除用户映射关系 -->
+    <select id="delUserMappingsByCmpUserId" parameterType="String">
+        delete * from tbl_user_mapping where cmp_user_id=#{cmpUserId}
+    </select>
+
+    <!-- 根据id删除用户映射关系 -->
+    <select id="delUserMappingsById" parameterType="String">
+        delete * from tbl_user_mapping where id=#{mappingId}
+    </select>
+
+    <!-- 据云id删除用户映射关系 -->
+    <select id="delUserMappingsByCloudId" parameterType="String">
+        delete * from tbl_user_mapping where cloud_id=#{cloudId}
+    </select>
+
+</mapper>

@@ -1,10 +1,11 @@
 package com.cmp.core.common;
 
-import com.cmp.core.cloud.entity.CloudEntity;
+import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.user.modle.CmpUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 public interface BaseHelper {
@@ -38,6 +39,16 @@ public interface BaseHelper {
     CompletionStage<String> formatUrl(String api, CloudEntity cloud);
 
     /**
+     * 组装url参数
+     *
+     * @param api      api
+     * @param cloud    云
+     * @param paramMap 自定义参数
+     * @return 组装后url
+     */
+    CompletionStage<String> formatUrl(String api, CloudEntity cloud, Map<String, String[]> paramMap);
+
+    /**
      * 绑定转发路由
      *
      * @param cloud 云
@@ -57,25 +68,35 @@ public interface BaseHelper {
      * 获取云实体
      *
      * @param request 请求
+     * @param cloudId 云平台id
      * @return 云实体
      */
-    CompletionStage<CloudEntity> getCloudEntity(HttpServletRequest request);
+    CompletionStage<CloudEntity> getCloudEntity(HttpServletRequest request, String cloudId);
 
     /**
-     * 获取所有云实体
+     * 获取所有已对接云平台
      *
      * @param request 请求
-     * @return 所有云实体
+     * @return 所有已对接云平台
      */
     CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request);
 
-    /**
-     * 获取cloud用户id
-     *
-     * @param cmpUserId cmp用户id
-     * @param cloud     云
-     * @return cloud用户id
-     */
-    String getCloudUserId(String cmpUserId, CloudEntity cloud);
+//    /**
+//     * 通过CmpUserId获取cloud用户id
+//     *
+//     * @param cmpUserId cmp用户id
+//     * @param cloud     云
+//     * @return cloud用户id
+//     */
+//    String getCloudUserId(String cmpUserId, CloudEntity cloud);
+//
+//    /**
+//     * 通过cloudUserId获取cmpUserId
+//     *
+//     * @param cloudUserId cloudUserId
+//     * @param cloud       云
+//     * @return cmpUserId
+//     */
+//    String getCmpUserId(String cloudUserId, CloudEntity cloud);
 
 }

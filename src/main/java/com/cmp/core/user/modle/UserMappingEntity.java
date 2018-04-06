@@ -1,7 +1,5 @@
 package com.cmp.core.user.modle;
 
-import java.sql.Timestamp;
-
 /**
  * 用户映射实体
  *
@@ -11,22 +9,18 @@ public class UserMappingEntity {
 
     private String id;
 
-    private String userName;
+    private String cmpUserName;
 
     private String cmpUserId;
 
-    private String cloudUserId;
+    private String accessKey;
 
     private String cloudId;
 
     /**
-     * 存储用户底层云用户信息（用户名，密码）
+     * 存储用户底层云用户信息（accessKey，secret）
      */
     private String authInfo;
-
-    private Timestamp createTime;
-
-    private Timestamp updateTime;
 
     public String getId() {
         return id;
@@ -36,12 +30,20 @@ public class UserMappingEntity {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getCmpUserName() {
+        return cmpUserName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setCmpUserName(String cmpUserName) {
+        this.cmpUserName = cmpUserName;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
     }
 
     public String getCmpUserId() {
@@ -50,14 +52,6 @@ public class UserMappingEntity {
 
     public void setCmpUserId(String cmpUserId) {
         this.cmpUserId = cmpUserId;
-    }
-
-    public String getCloudUserId() {
-        return cloudUserId;
-    }
-
-    public void setCloudUserId(String cloudUserId) {
-        this.cloudUserId = cloudUserId;
     }
 
     public String getCloudId() {
@@ -76,19 +70,4 @@ public class UserMappingEntity {
         this.authInfo = authInfo;
     }
 
-    public Timestamp getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Timestamp createTime) {
-        this.createTime = createTime;
-    }
-
-    public Timestamp getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Timestamp updateTime) {
-        this.updateTime = updateTime;
-    }
 }

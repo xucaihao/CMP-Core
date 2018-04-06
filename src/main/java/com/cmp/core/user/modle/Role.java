@@ -5,20 +5,25 @@ public enum Role {
     /**
      * 管理员
      */
-    MANAGER("manager"),
+    MANAGER("MANAGER"),
 
     /**
      * 用户
      */
-    USER("user");
+    USER("USER");
 
     private String role;
 
-    private Role(String role) {
+    Role(String role) {
         this.role = role;
     }
 
     public String getRole() {
+        return role;
+    }
+
+    @Override
+    public String toString() {
         return role;
     }
 }

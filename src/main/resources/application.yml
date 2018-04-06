@@ -10,5 +10,5 @@ spring:
         type: com.alibaba.druid.pool.DruidDataSource
         driver-class-name: com.mysql.jdbc.Driver
 mybatis:
-  type-aliases-package: com.cmp.core.cloud.entity, com.cmp.core.user.entity
+  type-aliases-package: com.cmp.core.cloud.model, com.cmp.core.user.model
   mapper-locations: classpath:mapping/*.xml

@@ -1,8 +1,8 @@
 package com.cmp.core.cloud.dao;
 
-import com.cmp.core.cloud.entity.CloudAdapterEntity;
-import com.cmp.core.cloud.entity.CloudEntity;
-import com.cmp.core.cloud.entity.CloudTypeEntity;
+import com.cmp.core.cloud.model.CloudAdapterEntity;
+import com.cmp.core.cloud.model.CloudEntity;
+import com.cmp.core.cloud.model.CloudTypeEntity;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public interface CloudDao {
      *
      * @param cloudId 云id
      */
-    void deleteCloud(String cloudId);
+    void deleteCloudById(String cloudId);
 
     /**
      * 添加云
@@ -58,6 +58,13 @@ public interface CloudDao {
      * @return 云类型列表
      */
     List<CloudTypeEntity> describeCloudTypes();
+
+    /**
+     * 更新云类型
+     *
+     * @param cloudType 云类型
+     */
+    void updateCloudType(CloudTypeEntity cloudType);
 
     /**
      * 获取所有云适配组件

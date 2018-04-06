@@ -1,7 +1,8 @@
 package com.cmp.core.common;
 
-import com.cmp.core.cloud.entity.CloudEntity;
-import com.cmp.core.cloud.service.CloudService;
+import com.cmp.core.cloud.model.CloudEntity;
+import com.cmp.core.cloud.model.CloudTypeEntity;
+import com.cmp.core.cloud.modules.CloudService;
 import com.cmp.core.user.modle.CmpUser;
 import com.cmp.core.user.modle.UserMappingEntity;
 import com.cmp.core.user.service.UserService;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -96,7 +98,41 @@ public class BaseHelperImpl implements BaseHelper {
      */
     @Override
     public CompletionStage<String> formatUrl(String api, CloudEntity cloud) {
-        return null;
+        return formatUrl(api, cloud, null);
+    }
+
+    /**
+     * 组装url参数
+     *
+     * @param api      api
+     * @param cloud    云
+     * @param paramMap 自定义参数
+     * @return 组装后url
+     */
+    @Override
+    public CompletionStage<String> formatUrl(String api, CloudEntity cloud, Map<String, String[]> paramMap) {
+        return bindAdapter(cloud).thenApply(address -> {
+            if (null == cloud.getRequest()) {
+                return address + api;
+            }
+            final Map<String, String[]> params = (null == paramMap)
+                    ? cloud.getRequest().getParameterMap() : paramMap;
+            if (!params.isEmpty()) {
+                final StringBuffer buffer = new StringBuffer();
+                params.forEach((k, v) ->
+                        buffer.append("&")
+                                .append(k)
+                                .append("=")
+                                .append(String.join(",", params.get(k)))
+                );
+                if (buffer.length() > 0) {
+                    return address + api + "?"
+                            + buffer.toString().substring(1, buffer.toString().length());
+
+                }
+            }
+            return address + api;
+        });
     }
 
     /**
@@ -107,7 +143,12 @@ public class BaseHelperImpl implements BaseHelper {
      */
     @Override
     public CompletionStage<String> bindAdapter(CloudEntity cloud) {
-        return null;
+        return cloudService.describeCloudAdapterByCloudType(cloud.getCloudType())
+                .thenApply(adapter ->
+                        adapter.getAdapterProtocol()
+                                + "://" + adapter.getAdapterIp()
+                                + ":" + adapter.getAdapterPort()
+                );
     }
 
     /**
@@ -135,52 +176,120 @@ public class BaseHelperImpl implements BaseHelper {
      * @return 云实体
      */
     @Override
-    public CompletionStage<CloudEntity> getCloudEntity(HttpServletRequest request) {
-        String cloudId = Optional.ofNullable(request.getHeader(HEADER_CLOUD_ID))
-                .orElseThrow(() -> new CoreException(ERR_CLOUD_ID_NOT_FOUND));
-        return cloudService.describeCloudById(cloudId)
-                .thenCombine(getCmpUserEntity(request), (cloud, cmpUser) -> {
-                    UserMappingEntity userMappingEntity = userService.describeUserMapping(cmpUser.getUserId(), cloudId);
-                    cloud.setAuthInfo(userMappingEntity.getAuthInfo());
-                    return cloud;
+    public CompletionStage<CloudEntity> getCloudEntity(HttpServletRequest request, String cloudId) {
+        CompletableFuture<CmpUser> cmpUserFuture = getCmpUserEntity(request).toCompletableFuture();
+        CompletableFuture<CloudEntity> cloudFuture = cloudService.describeCloudById(cloudId).toCompletableFuture();
+        CompletableFuture<List<CloudTypeEntity>> cloudTypesFuture = cloudService.describeCloudTypes().toCompletableFuture();
+        return CompletableFuture.allOf(cmpUserFuture, cloudFuture, cloudTypesFuture)
+                .thenApply(x -> {
+                    try {
+                        CmpUser cmpUser = cmpUserFuture.get(TIME_OUT_SECONDS, TimeUnit.SECONDS);
+                        CloudEntity cloud = cloudFuture.get(TIME_OUT_SECONDS, TimeUnit.SECONDS);
+                        cloudTypesFuture.get(TIME_OUT_SECONDS, TimeUnit.SECONDS)
+                                .stream()
+                                .filter(cloudType -> cloudType.getTypeValue().equals(cloud.getCloudType())
+                                        && cloudType.isDisable())
+                                .findAny()
+                                .orElseThrow(() -> new CoreException(ERR_CLOUD_TYPE_NOT_FOUND));
+                        switch (cmpUser.getRole()) {
+                            case USER:
+                                UserMappingEntity userMappingEntity =
+                                        userService.describeUserMapping(cmpUser.getUserId(), cloudId, CMP);
+                                cloud.setAuthInfo(userMappingEntity.getAuthInfo());
+                                cloud.setRequest(request);
+                                break;
+                            case MANAGER:
+                                break;
+                        }
+                        return cloud;
+                    } catch (Exception e) {
+                        ExceptionUtil.dealException(e);
+                        return null;
+                    }
                 });
     }
 
     /**
-     * 获取所有云实体
+     * 获取所有已对接云平台
      *
      * @param request 请求
-     * @return 所有云实体
+     * @return 所有已对接云平台
      */
     @Override
     public CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request) {
-        return getCmpUserEntity(request)
-                .thenCombine(cloudService.describeClouds(), (cmpUser, clouds) -> {
-                            String cmpUserId = cmpUser.getUserId();
-                            //将用户映射关系以cloudId作为key存入Map中
-                            Map<String, UserMappingEntity> userMappingMap =
-                                    userService.describeUserMappings(cmpUserId)
-                                            .stream()
-                                            .collect(toMap(UserMappingEntity::getCloudId, Function.identity()));
-                            //筛选出请求用户存在映射关系的云列表
-                            return clouds.stream().filter(cloud ->
-                                    userMappingMap.containsKey(cloud.getCloudId()))
-                                    .peek(cloud -> cloud.setAuthInfo(userMappingMap.get(cloud.getCloudId()).getAuthInfo()))
-                                    .collect(toList());
+        CompletableFuture<CmpUser> cmpUserFuture = getCmpUserEntity(request).toCompletableFuture();
+        CompletableFuture<List<CloudEntity>> cloudsFuture = cloudService.describeClouds().toCompletableFuture();
+        CompletableFuture<List<CloudTypeEntity>> cloudTypesFuture = cloudService.describeCloudTypes().toCompletableFuture();
+        return CompletableFuture.allOf(cmpUserFuture, cloudsFuture, cloudTypesFuture)
+                .thenApply(x -> {
+                    try {
+                        CmpUser cmpUser = cmpUserFuture.get(TIME_OUT_SECONDS, TimeUnit.SECONDS);
+                        List<CloudEntity> clouds = cloudsFuture.get(TIME_OUT_SECONDS, TimeUnit.SECONDS);
+                        List<CloudTypeEntity> cloudTypes = cloudTypesFuture.get(TIME_OUT_SECONDS, TimeUnit.SECONDS)
+                                .stream()
+                                .filter(CloudTypeEntity::isDisable)
+                                .collect(toList());
+                        if (CollectionUtils.isEmpty(cloudTypes)) {
+                            return new ArrayList<CloudEntity>();
                         }
-                );
+                        //将可对接云平台已id作为key存入Map中
+                        Map<String, CloudTypeEntity> cloudTypeMap = cloudTypes.stream()
+                                .collect(toMap(CloudTypeEntity::getId, Function.identity()));
+                        // 根据可对接云平台类型筛选云列表
+                        clouds = clouds.stream()
+                                .filter(cloud -> cloudTypeMap.containsKey(cloud.getCloudType()))
+                                .collect(toList());
+                        switch (cmpUser.getRole()) {
+                            case USER:
+                                String cmpUserId = cmpUser.getUserId();
+                                //将用户映射关系以cloudId作为key存入Map中
+                                Map<String, UserMappingEntity> userMappingMap =
+                                        userService.describeUserMappings(cmpUserId)
+                                                .stream()
+                                                .collect(toMap(UserMappingEntity::getCloudId, Function.identity()));
+                                //筛选出请求用户存在映射关系的云列表
+                                clouds = clouds.stream()
+                                        .filter(cloud -> userMappingMap.containsKey(cloud.getCloudId()))
+                                        .peek(cloud -> {
+                                            String authInfo = userMappingMap.get(cloud.getCloudId()).getAuthInfo();
+                                            cloud.setAuthInfo(authInfo);
+                                            cloud.setRequest(request);
+                                        }).collect(toList());
+                                break;
+                            case MANAGER:
+                                break;
+                        }
+                        return clouds;
+                    } catch (Exception e) {
+                        ExceptionUtil.dealException(e);
+                        return null;
+                    }
+                });
     }
 
-    /**
-     * 获取cloud用户id
-     *
-     * @param cmpUserId cmp用户id
-     * @param cloud     云
-     * @return cloud用户id
-     */
-    @Override
-    public String getCloudUserId(String cmpUserId, CloudEntity cloud) {
-        return userService.describeUserMapping(cmpUserId, cloud.getCloudId())
-                .getCloudUserId();
-    }
+//    /**
+//     * 通过CmpUserId获取cloud用户id
+//     *
+//     * @param cmpUserId cmp用户id
+//     * @param cloud     云
+//     * @return cloud用户id
+//     */
+//    @Override
+//    public String getCloudUserId(String cmpUserId, CloudEntity cloud) {
+//        return userService.describeUserMapping(cmpUserId, cloud.getCloudId(), CMP)
+//                .getCloudUserId();
+//    }
+//
+//    /**
+//     * 通过cloudUserId获取cmpUserId
+//     *
+//     * @param cloudUserId cloudUserId
+//     * @param cloud       云
+//     * @return cmpUserId
+//     */
+//    @Override
+//    public String getCmpUserId(String cloudUserId, CloudEntity cloud) {
+//        return userService.describeUserMapping(cloudUserId, cloud.getCloudId(), CLOUD)
+//                .getCmpUserId();
+//    }
 }
