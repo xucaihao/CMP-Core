@@ -25,6 +25,11 @@
         select * from tbl_user where user_id=#{userId}
     </select>
 
+    <!-- 通过id获取指定用户实体 -->
+    <select id="describeUserByName" parameterType="String" resultMap="CmpUser">
+        select * from tbl_user where user_name=#{userName}
+    </select>
+
     <!-- 通过id删除指定用户实体 -->
     <select id="deleteUser" parameterType="String">
         delete * from tbl_user where user_id=#{userId}

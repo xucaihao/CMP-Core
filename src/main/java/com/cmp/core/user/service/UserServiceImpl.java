@@ -32,6 +32,31 @@ public class UserServiceImpl implements UserService {
     private UserDao userDao;
 
     /**
+     * 获取登录用户信息
+     *
+     * @param user 登录信息
+     * @return 用户信息
+     */
+    @Override
+    public CmpUser describeLoginUser(CmpUser user) {
+        String userName = user.getUserName();
+        String password = user.getPassword();
+        CmpUser cmpUser = Optional.ofNullable(userDao.describeUserByName(userName))
+                .filter(u -> password.equals(u.getPassword()))
+                .orElseThrow(() -> new CoreException(ERR_CMP_USER_NOT_FOUND));
+        switch (cmpUser.getRoleName()) {
+            case Constance.USER:
+                cmpUser.setRole(Role.USER);
+                return cmpUser;
+            case Constance.MANAGER:
+                cmpUser.setRole(Role.MANAGER);
+                return cmpUser;
+            default:
+                return null;
+        }
+    }
+
+    /**
      * 查询cmpUser列表
      *
      * @return cmpUser列表

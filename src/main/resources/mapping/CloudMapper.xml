@@ -9,6 +9,7 @@
         <result column="cloud_id" property="cloudId"/>
         <result column="cloud_name" property="cloudName"/>
         <result column="cloud_type" property="cloudType"/>
+        <result column="visibility" property="visibility"/>
         <result column="cloud_protocol" property="cloudProtocol"/>
         <result column="cloud_ip" property="cloudIp"/>
         <result column="cloud_port" property="cloudPort"/>

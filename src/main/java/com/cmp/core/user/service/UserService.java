@@ -9,6 +9,14 @@ import java.util.concurrent.CompletionStage;
 public interface UserService {
 
     /**
+     * 获取登录用户信息
+     *
+     * @param user 登录信息
+     * @return 用户信息
+     */
+    CmpUser describeLoginUser(CmpUser user);
+
+    /**
      * 查询cmpUser列表
      *
      * @return cmpUser列表

@@ -98,7 +98,7 @@ public class ResData<T> {
         return new ResData(code, msg);
     }
 
-    public static ResData failure(Throwable e, HttpServletRequest request) {
+    public static ResData failure(Throwable e) {
         final StackTraceElement e1 = Thread.currentThread().getStackTrace()[2];
         String method = e1.getMethodName().contains("lambda")
                 ? e1.getMethodName().split("\\$")[1] : e1.getMethodName();
@@ -119,7 +119,7 @@ public class ResData<T> {
             //其他线程中自定义异常
             if (e.getCause() instanceof CoreException) {
                 ErrorEnum errorEnum = ((CoreException) e.getCause()).getErrorEnum();
-                msg = JsonUtil.objectToString(errorEnum);
+                msg = errorEnum.toString();
             }
             if (e.getCause() instanceof RestException) {
                 code = ((RestException) e.getCause()).getCode();

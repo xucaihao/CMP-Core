@@ -1,5 +1,6 @@
 package com.cmp.core.cloud.controller;
 
+import com.alibaba.dubbo.common.utils.IOUtils;
 import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.cloud.model.CloudTypeEntity;
 import com.cmp.core.cloud.model.req.ReqCreCloud;
@@ -9,16 +10,18 @@ import com.cmp.core.cloud.model.res.ResCloudEntity;
 import com.cmp.core.cloud.model.res.ResCloudTypesEntity;
 import com.cmp.core.cloud.model.res.ResCloudsEntity;
 import com.cmp.core.cloud.modules.CloudService;
-import com.cmp.core.common.BaseController;
-import com.cmp.core.common.CoreException;
-import com.cmp.core.common.PingUtil;
-import com.cmp.core.common.ResData;
+import com.cmp.core.common.*;
 import com.cmp.core.user.service.UserService;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -41,21 +44,35 @@ public class CloudController extends BaseController {
     /**
      * 获取所有可对接云平台类型
      *
-     * @param request http请求
+     * @param response http响应
      * @return 可对接云平台类型列表
      */
     @RequestMapping("/types")
     @ResponseBody
-    public CompletionStage<ResData> describeCloudTypes(final HttpServletRequest request) {
+    public CompletionStage<JsonNode> describeCloudTypes(final HttpServletResponse response) {
         return cloudService.describeCloudTypes()
                 .thenApply(cloudTypes ->
-                        ResData.build(OK.value(), new ResCloudTypesEntity(cloudTypes), request))
-                .exceptionally(e -> ResData.failure(e, request));
+                        okFormat(OK.value(), new ResCloudTypesEntity(cloudTypes), response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 更新云类型（置为可用、不可用）
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 操作
+     * @throws IOException IOException
+     */
     @PutMapping("/types")
     @ResponseBody
-    public CompletionStage<ResData> updateCloudType(final HttpServletRequest request, ReqModCloudType cloudType) {
+    public CompletionStage<JsonNode> updateCloudType(
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqModCloudType cloudType = JsonUtil.stringToObject(body, ReqModCloudType.class);
         //校验请求体
         return checkModCloudTypeBody(cloudType)
                 .thenCombine(cloudService.describeCloudTypes(), (flag, cloudTypes) -> {
@@ -78,45 +95,63 @@ public class CloudController extends BaseController {
                                         });
                             });
                     return null;
-                }).thenApply(res -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                }).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 获取所有已对接云平台
      *
-     * @param request http请求
+     * @param request  http请求
+     * @param response http响应
      * @return 已对接云平台列表
      */
     @RequestMapping("")
     @ResponseBody
-    public CompletionStage<ResData> describeClouds(final HttpServletRequest request) {
+    public CompletionStage<JsonNode> describeClouds(
+            final HttpServletRequest request,
+            final HttpServletResponse response) {
         return getAllCloudEntity(request)
-                .thenApply(clouds ->
-                        ResData.build(OK.value(), new ResCloudsEntity(clouds), request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(clouds -> okFormat(OK.value(), new ResCloudsEntity(clouds), response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 通过id查询指定云平台
      *
-     * @param request http请求
-     * @param cloudId 云平台id
+     * @param request  http请求
+     * @param response http响应
+     * @param cloudId  云平台id
      * @return 指定云平台
      */
     @RequestMapping("/{cloudId}")
     @ResponseBody
-    public CompletionStage<ResData> describeCloudAttribute(
-            final HttpServletRequest request, @PathVariable final String cloudId) {
+    public CompletionStage<JsonNode> describeCloudAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String cloudId) {
         return getCloudEntity(request, cloudId)
-                .thenApply(cloud ->
-                        ResData.build(OK.value(), new ResCloudEntity(cloud), request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(cloud -> okFormat(OK.value(), new ResCloudEntity(cloud), response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 纳管云
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 操作结果
+     * @throws IOException IOException
+     */
     @PostMapping("")
     @ResponseBody
-    public CompletionStage<ResData> createCloud(final HttpServletRequest request, ReqCreCloud cloud) {
+    public CompletionStage<JsonNode> createCloud(
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqCreCloud cloud = JsonUtil.stringToObject(body, ReqCreCloud.class);
         //校验请求体
         return checkCreCloudBody(cloud)
                 .thenAccept(flag -> {
@@ -137,14 +172,29 @@ public class CloudController extends BaseController {
                                 }
                                 return null;
                             });
-                }).thenApply(aVoid -> ResData.build(CREATED.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                }).thenApply(aVoid -> okFormat(CREATED.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 修改云平台
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @param cloudId  云id
+     * @return 操作结果
+     * @throws IOException IOException
+     */
     @PutMapping("/{cloudId}")
     @ResponseBody
-    public CompletionStage<ResData> modifyCloudAttribute(
-            final HttpServletRequest request, @PathVariable final String cloudId, ReqModCloud cloud) {
+    public CompletionStage<JsonNode> modifyCloudAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String cloudId)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqModCloud cloud = JsonUtil.stringToObject(body, ReqModCloud.class);
         //校验请求体
         return checkModCloudBody(cloud)
                 .thenCombine(cloudService.describeClouds(), (flag, clouds) -> {
@@ -175,14 +225,24 @@ public class CloudController extends BaseController {
                                         });
                             });
                     return null;
-                }).thenApply(res -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                }).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 删除云
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @param cloudId  云id
+     * @return 操作结果
+     */
     @DeleteMapping("/{cloudId}")
     @ResponseBody
-    public CompletionStage<ResData> deleteCloud(
-            final HttpServletRequest request, @PathVariable final String cloudId) {
+    public CompletionStage<JsonNode> deleteCloud(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String cloudId) {
         return cloudService.describeCloudById(cloudId)
                 .thenAccept(cloud ->
                         //删除云、删除用户映射关系
@@ -197,8 +257,8 @@ public class CloudController extends BaseController {
                                             }
                                             return null;
                                         })
-                ).thenApply(res -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                ).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     private CompletionStage<Boolean> checkCreCloudBody(ReqCreCloud cloud) {

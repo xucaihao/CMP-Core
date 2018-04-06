@@ -1,9 +1,10 @@
 package com.cmp.core.user.controller;
 
+import com.alibaba.dubbo.common.utils.IOUtils;
 import com.cmp.core.cloud.modules.CloudService;
 import com.cmp.core.common.BaseController;
 import com.cmp.core.common.CoreException;
-import com.cmp.core.common.ResData;
+import com.cmp.core.common.JsonUtil;
 import com.cmp.core.user.modle.CmpUser;
 import com.cmp.core.user.modle.Role;
 import com.cmp.core.user.modle.UserMappingEntity;
@@ -14,6 +15,7 @@ import com.cmp.core.user.modle.res.ResUser;
 import com.cmp.core.user.modle.res.ResUserMappings;
 import com.cmp.core.user.modle.res.ResUsers;
 import com.cmp.core.user.service.UserService;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -43,77 +49,110 @@ public class UserController extends BaseController {
     private UserService userService;
 
     /**
+     * 获取登录用户信息
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @throws IOException IOException
+     */
+    @RequestMapping(value = "/loginInformation", method = RequestMethod.POST)
+    @ResponseBody
+    public CompletionStage<JsonNode> describeLoginUser(
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        CmpUser user = JsonUtil.stringToObject(body, CmpUser.class);
+        return CompletableFuture.supplyAsync(() ->
+                userService.describeLoginUser(user))
+                .thenApply(resUser -> okFormat(OK.value(), new ResUser(resUser), response))
+                .exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
      * 查询用户列表
      *
-     * @param request http请求
+     * @param response http响应
      * @return 用户列表
      */
     @RequestMapping("")
     @ResponseBody
-    public CompletionStage<ResData> describeUsers(final HttpServletRequest request) {
+    public CompletionStage<JsonNode> describeUsers(final HttpServletResponse response) {
         return CompletableFuture.supplyAsync(() ->
                 userService.describeCmpUsers())
-                .thenApply(users ->
-                        ResData.build(OK.value(), new ResUsers(users), request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(users -> okFormat(OK.value(), new ResUsers(users), response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 根据id查询指定用户
      *
-     * @param request http请求
-     * @param userId  用户id
+     * @param response http响应
+     * @param userId   用户id
      * @return 指定用户
      */
     @RequestMapping("/{userId}")
     @ResponseBody
-    public CompletionStage<ResData> describeUserAttribute(
-            final HttpServletRequest request, @PathVariable final String userId) {
+    public CompletionStage<JsonNode> describeUserAttribute(
+            final HttpServletResponse response, @PathVariable final String userId) {
         return CompletableFuture.supplyAsync(() ->
                 userService.describeUserAttribute(userId))
-                .thenApply(user ->
-                        ResData.build(OK.value(), new ResUser(user), request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(user -> okFormat(OK.value(), new ResUser(user), response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 用户注册
      *
-     * @param request http请求
-     * @param user    请求体
+     * @param request  http请求
+     * @param response http响应
      * @return 操作结果
+     * @throws IOException IOException
      */
-    @PostMapping("")
+    @RequestMapping(value = "", method = RequestMethod.POST)
     @ResponseBody
-    public CompletionStage<ResData> registerUser(
-            final HttpServletRequest request, final ReqUser user) {
+    public CompletionStage<JsonNode> registerUser(
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqUser user = JsonUtil.stringToObject(body, ReqUser.class);
         //校验请求体
         return checkRegisterUserBody(user).thenAccept(flag ->
                 //转换请求体
                 buildCmpUser(user, null).thenCompose(resUser ->
-                        //查询数据库记录
+                        //添加数据库记录
                         userService.addUser(resUser)).thenAccept(registerFlag -> {
                     if (!registerFlag) {
                         throw new CoreException(ERR_REGISTER_USER);
                     }
-                })).thenApply(x -> ResData.build(CREATED.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                })).thenApply(x -> okFormat(CREATED.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 修改用户信息
      *
-     * @param request http请求
-     * @param userId  用户id
-     * @param reqUser 请求体
+     * @param request  http请求
+     * @param response http响应
+     * @param userId   用户id
      * @return 操作结果
+     * @throws IOException IOException
      */
     @PutMapping("/{userId}")
     @ResponseBody
-    public CompletionStage<ResData> modifyUserAttribute(
-            final HttpServletRequest request, @PathVariable final String userId, ReqUser reqUser) {
+    public CompletionStage<JsonNode> modifyUserAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String userId)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqUser reqUser = JsonUtil.stringToObject(body, ReqUser.class);
         //校验请求体
-        return checkModUserBody(reqUser, userId)
+        return checkModUserBody(reqUser)
                 .thenAccept(flag -> {
                     if (!flag) {
                         throw new CoreException(ERR_UPDATE_USER_BODY);
@@ -142,21 +181,22 @@ public class UserController extends BaseController {
                                             }
                                         });
                             });
-                }).thenApply(res -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                }).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 删除用户
      *
-     * @param request http请求
-     * @param userId  用户id
+     * @param response http响应
+     * @param userId   用户id
      * @return 操作结果
      */
     @DeleteMapping("/{userId}")
     @ResponseBody
-    public CompletionStage<ResData> deleteUser(
-            final HttpServletRequest request, @PathVariable final String userId) {
+    public CompletionStage<JsonNode> deleteUser(
+            final HttpServletResponse response,
+            @PathVariable final String userId) {
         return CompletableFuture.supplyAsync(() -> userService.describeUserAttribute(userId))
                 .thenAccept(cmpUser ->
                         //删除用户、删除用户映射关系
@@ -171,39 +211,45 @@ public class UserController extends BaseController {
                                             }
                                             return null;
                                         })
-                ).thenApply(res -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                ).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 根据用户ID查询映射关系列表
      *
-     * @param request http请求
-     * @param userId  用户id
+     * @param response http响应
+     * @param userId   用户id
      * @return 映射关系列表
      */
     @RequestMapping("/{userId}/mappings")
     @ResponseBody
-    public CompletionStage<ResData> describeMappingsByUserId(
-            final HttpServletRequest request, @PathVariable final String userId) {
+    public CompletionStage<JsonNode> describeMappingsByUserId(
+            final HttpServletResponse response,
+            @PathVariable final String userId) {
         return CompletableFuture.supplyAsync(() ->
                 userService.describeUserMappings(userId))
-                .thenApply(mappings ->
-                        ResData.build(OK.value(), new ResUserMappings(mappings), request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(mappings -> okFormat(OK.value(), new ResUserMappings(mappings), response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 添加用户映射关系
      *
-     * @param request http请求
-     * @param mapping 请求体
+     * @param request  http请求
+     * @param response http响应
      * @return 操作结果
+     * @throws IOException IOException
      */
     @PostMapping("/mappings")
     @ResponseBody
-    public CompletionStage<ResData> addUserMapping(
-            final HttpServletRequest request, final ReqAddMapping mapping) {
+    public CompletionStage<JsonNode> addUserMapping(
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqAddMapping mapping = JsonUtil.stringToObject(body, ReqAddMapping.class);
         //校验请求体
         return checkAddMappingBody(mapping).thenAccept(flag ->
                 //转换请求体
@@ -219,22 +265,29 @@ public class UserController extends BaseController {
                                                 throw new CoreException(ERR_ADD_MAPPING);
                                             }
                                         })))
-                .thenApply(x -> ResData.build(CREATED.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(x -> okFormat(CREATED.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 更新用户映射关系（修改云账号密码）
      *
      * @param request   http请求
+     * @param response  http响应
      * @param mappingId 映射关系id
-     * @param mapping   请求体
      * @return 操作结果
+     * @throws IOException IOException
      */
     @PutMapping("/mappings/{mappingId}")
     @ResponseBody
-    public CompletionStage<ResData> updateUserMapping(
-            final HttpServletRequest request, @PathVariable final String mappingId, final ReqModMapping mapping) {
+    public CompletionStage<JsonNode> updateUserMapping(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String mappingId)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqModMapping mapping = JsonUtil.stringToObject(body, ReqModMapping.class);
         //校验请求体
         return checkModMappingBody(mapping)
                 .thenCompose(flag -> {
@@ -254,21 +307,21 @@ public class UserController extends BaseController {
                                             throw new CoreException(ERR_UPDATE_MAPPING);
                                         }
                                     }));
-                }).thenApply(x -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                }).thenApply(x -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
      * 根据id删除用户映射关系
      *
-     * @param request   http请求
+     * @param response  http响应
      * @param mappingId 映射关系id
      * @return 操作结果
      */
     @DeleteMapping("/mappings/{mappingId}")
     @ResponseBody
-    public CompletionStage<ResData> deleteUserMappingById(
-            final HttpServletRequest request, @PathVariable final String mappingId) {
+    public CompletionStage<JsonNode> deleteUserMappingById(
+            final HttpServletResponse response, @PathVariable final String mappingId) {
         return CompletableFuture.supplyAsync(() ->
                 userService.describeUserMappingById(mappingId))
                 .thenAccept(mapping ->
@@ -278,8 +331,8 @@ public class UserController extends BaseController {
                                         throw new CoreException(ERR_DELETE_USER_MAPPING);
                                     }
                                 }))
-                .thenApply(res -> ResData.build(NO_CONTENT.value(), null, request))
-                .exceptionally(e -> ResData.failure(e, request));
+                .thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     /**
@@ -330,7 +383,7 @@ public class UserController extends BaseController {
         );
     }
 
-    private CompletionStage<Boolean> checkModUserBody(ReqUser user, String userId) {
+    private CompletionStage<Boolean> checkModUserBody(ReqUser user) {
         return CompletableFuture.supplyAsync(() ->
                 (null != user.getUserName()
                         && null != user.getPassword()

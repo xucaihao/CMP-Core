@@ -23,6 +23,14 @@ public interface UserDao {
     CmpUser describeUserById(String cmpUserId);
 
     /**
+     * 查询指定cmpUser
+     *
+     * @param userName userName
+     * @return cmpUser
+     */
+    CmpUser describeUserByName(String userName);
+
+    /**
      * 添加用户记录
      *
      * @param user user
