@@ -1,7 +1,7 @@
 package com.cmp.core.common;
 
 import com.cmp.core.cloud.model.CloudEntity;
-import com.cmp.core.user.modle.CmpUser;
+import com.cmp.core.user.model.CmpUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

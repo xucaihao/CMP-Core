@@ -1,7 +1,7 @@
 package com.cmp.core.common;
 
 import com.cmp.core.cloud.model.CloudEntity;
-import com.cmp.core.user.modle.CmpUser;
+import com.cmp.core.user.model.CmpUser;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

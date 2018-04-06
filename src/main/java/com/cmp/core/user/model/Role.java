@@ -1,4 +1,4 @@
-package com.cmp.core.user.modle;
+package com.cmp.core.user.model;
 
 public enum Role {
 

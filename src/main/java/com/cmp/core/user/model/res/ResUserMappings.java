@@ -1,6 +1,6 @@
-package com.cmp.core.user.modle.res;
+package com.cmp.core.user.model.res;
 
-import com.cmp.core.user.modle.UserMappingEntity;
+import com.cmp.core.user.model.UserMappingEntity;
 
 import java.util.List;
 

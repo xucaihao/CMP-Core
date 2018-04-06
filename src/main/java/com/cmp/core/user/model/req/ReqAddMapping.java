@@ -1,4 +1,4 @@
-package com.cmp.core.user.modle.req;
+package com.cmp.core.user.model.req;
 
 public class ReqAddMapping {
 

@@ -1,7 +1,7 @@
 package com.cmp.core.user.service;
 
-import com.cmp.core.user.modle.CmpUser;
-import com.cmp.core.user.modle.UserMappingEntity;
+import com.cmp.core.user.model.CmpUser;
+import com.cmp.core.user.model.UserMappingEntity;
 
 import java.util.List;
 import java.util.concurrent.CompletionStage;
