@@ -10,7 +10,10 @@ import com.cmp.core.cloud.model.res.ResCloudEntity;
 import com.cmp.core.cloud.model.res.ResCloudTypesEntity;
 import com.cmp.core.cloud.model.res.ResCloudsEntity;
 import com.cmp.core.cloud.modules.CloudService;
-import com.cmp.core.common.*;
+import com.cmp.core.common.BaseController;
+import com.cmp.core.common.CoreException;
+import com.cmp.core.common.JsonUtil;
+import com.cmp.core.common.PingUtil;
 import com.cmp.core.user.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +64,7 @@ public class CloudController extends BaseController {
      *
      * @param request  http请求
      * @param response http响应
-     * @return 操作
+     * @return 操作结果
      * @throws IOException IOException
      */
     @PutMapping("/types")
@@ -154,20 +157,21 @@ public class CloudController extends BaseController {
         ReqCreCloud cloud = JsonUtil.stringToObject(body, ReqCreCloud.class);
         //校验请求体
         return checkCreCloudBody(cloud)
-                .thenAccept(flag -> {
+                .thenCompose(flag -> {
                     if (!flag) {
                         throw new CoreException(ERR_CREATE_CLOUD_BODY);
                     }
                     //验证cloud重名，私有云验证ip相同和网络通
-                    checkCloud(cloud)
+                    return checkCloud(cloud)
                             .thenCombine(convertCreCloudBody(cloud), (cloudFlag, convertCloud) -> {
                                 if (cloudFlag) {
                                     //插入数据库记录
-                                    cloudService.addCloud(convertCloud)
-                                            .thenAccept(addFlag -> {
+                                    return cloudService.addCloud(convertCloud)
+                                            .thenCompose(addFlag -> {
                                                 if (!addFlag) {
                                                     throw new CoreException(ERR_ADD_CLOUD);
                                                 }
+                                                return null;
                                             });
                                 }
                                 return null;
@@ -197,34 +201,37 @@ public class CloudController extends BaseController {
         ReqModCloud cloud = JsonUtil.stringToObject(body, ReqModCloud.class);
         //校验请求体
         return checkModCloudBody(cloud)
-                .thenCombine(cloudService.describeClouds(), (flag, clouds) -> {
+                .thenCompose(flag -> {
                     if (!flag) {
                         throw new CoreException(ERR_MODIFY_CLOUD_BODY);
                     }
-                    CloudEntity cloudEntity = clouds.stream().filter(vo ->
-                            cloudId.equals(vo.getCloudId()))
-                            .findAny()
-                            .orElseThrow(() -> new CoreException(ERR_CLOUD_NOT_FOUND));
-                    //请求体转换
-                    convertModCloudBody(cloud, cloudEntity)
-                            .thenAccept(resCloud -> {
-                                clouds.stream().filter(vo ->
-                                        //校验重名
-                                        resCloud.getCloudName().equals(vo.getCloudName())
-                                                && !resCloud.getCloudId().equals(vo.getCloudId()))
+                    return cloudService.describeClouds()
+                            .thenCompose(clouds -> {
+                                CloudEntity cloudEntity = clouds.stream().filter(vo ->
+                                        cloudId.equals(vo.getCloudId()))
                                         .findAny()
-                                        .ifPresent(x -> {
-                                            throw new CoreException(ERR_REPEATED_CLOUD_NAME);
-                                        });
-                                //更新数据库
-                                cloudService.updateCloud(resCloud)
-                                        .thenAccept(updateFlag -> {
-                                            if (!updateFlag) {
-                                                throw new CoreException(ERR_UPDATE_CLOUD);
-                                            }
+                                        .orElseThrow(() -> new CoreException(ERR_CLOUD_NOT_FOUND));
+                                //请求体转换
+                                return convertModCloudBody(cloud, cloudEntity)
+                                        .thenCompose(resCloud -> {
+                                            clouds.stream().filter(vo ->
+                                                    //校验重名
+                                                    resCloud.getCloudName().equals(vo.getCloudName())
+                                                            && !resCloud.getCloudId().equals(vo.getCloudId()))
+                                                    .findAny()
+                                                    .ifPresent(x -> {
+                                                        throw new CoreException(ERR_REPEATED_CLOUD_NAME);
+                                                    });
+                                            //更新数据库
+                                            return cloudService.updateCloud(resCloud)
+                                                    .thenApply(updateFlag -> {
+                                                        if (!updateFlag) {
+                                                            throw new CoreException(ERR_UPDATE_CLOUD);
+                                                        }
+                                                        return null;
+                                                    });
                                         });
                             });
-                    return null;
                 }).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
                 .exceptionally(e -> badFormat(e, response));
     }
@@ -232,7 +239,6 @@ public class CloudController extends BaseController {
     /**
      * 删除云
      *
-     * @param request  http请求
      * @param response http响应
      * @param cloudId  云id
      * @return 操作结果
@@ -240,11 +246,10 @@ public class CloudController extends BaseController {
     @DeleteMapping("/{cloudId}")
     @ResponseBody
     public CompletionStage<JsonNode> deleteCloud(
-            final HttpServletRequest request,
             final HttpServletResponse response,
             @PathVariable final String cloudId) {
         return cloudService.describeCloudById(cloudId)
-                .thenAccept(cloud ->
+                .thenCompose(cloud ->
                         //删除云、删除用户映射关系
                         cloudService.deleteCloudById(cloudId)
                                 .thenCombine(userService.delUserMappingsByCloudId(cloudId),
@@ -311,6 +316,9 @@ public class CloudController extends BaseController {
             resCloud.setStatus("active");
             switch (reqCloud.getVisibility()) {
                 case PUBLIC:
+                    resCloud.setCloudProtocol("defalut");
+                    resCloud.setCloudIp("defalut");
+                    resCloud.setCloudPort("defalut");
                     break;
                 case PRIVATE:
                     resCloud.setCloudProtocol(reqCloud.getCloudProtocol());
@@ -373,7 +381,6 @@ public class CloudController extends BaseController {
                     }
                     return true;
                 });
-
     }
 
 }

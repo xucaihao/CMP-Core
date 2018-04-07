@@ -4,6 +4,7 @@ import com.cmp.core.user.model.CmpUser;
 import com.cmp.core.user.model.UserMappingEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserDao {
 
@@ -35,14 +36,14 @@ public interface UserDao {
      *
      * @param user user
      */
-    void addUser(CmpUser user);
+    void addUser(Map<String, Object> user);
 
     /**
      * 更新用户记录
      *
      * @param user user
      */
-    void updateUser(CmpUser user);
+    void updateUser(Map<String, Object> user);
 
     /**
      * 删除数据库用户记录

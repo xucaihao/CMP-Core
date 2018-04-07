@@ -5,12 +5,14 @@ import com.cmp.core.cloud.model.CloudAdapterEntity;
 import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.cloud.model.CloudTypeEntity;
 import com.cmp.core.common.CoreException;
+import com.cmp.core.common.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -44,10 +46,11 @@ public class CloudServiceImpl implements CloudService {
      * @return 操作结果
      */
     @Override
+    @SuppressWarnings("unchecked")
     public CompletionStage<Boolean> updateCloudType(CloudTypeEntity cloudType) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                cloudDao.updateCloudType(cloudType);
+                cloudDao.updateCloudType(JsonUtil.stringToObject(JsonUtil.objectToString(cloudType), Map.class));
                 return true;
             } catch (Exception e) {
                 logger.error("updateCloudType in sql error: {}", e);
@@ -100,10 +103,11 @@ public class CloudServiceImpl implements CloudService {
      * @return 操作结果
      */
     @Override
+    @SuppressWarnings("unchecked")
     public CompletionStage<Boolean> addCloud(CloudEntity cloud) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                cloudDao.addCloud(cloud);
+                cloudDao.addCloud(JsonUtil.stringToObject(JsonUtil.objectToString(cloud), Map.class));
                 return true;
             } catch (Exception e) {
                 logger.error("addCloud in sql error: {}", e);
@@ -119,10 +123,11 @@ public class CloudServiceImpl implements CloudService {
      * @return 操作结果
      */
     @Override
+    @SuppressWarnings("unchecked")
     public CompletionStage<Boolean> updateCloud(CloudEntity cloud) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                cloudDao.updateCloud(cloud);
+                cloudDao.updateCloud(JsonUtil.stringToObject(JsonUtil.objectToString(cloud), Map.class));
                 return true;
             } catch (Exception e) {
                 logger.error("updateCloud in sql error: {}", e);

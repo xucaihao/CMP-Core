@@ -114,7 +114,7 @@ public class ResData<T> {
             //当前线程中自定义异常
             if (e instanceof CoreException) {
                 ErrorEnum errorEnum = ((CoreException) e).getErrorEnum();
-                msg = JsonUtil.objectToString(errorEnum);
+                msg = errorEnum.toString();
             }
             //其他线程中自定义异常
             if (e.getCause() instanceof CoreException) {
@@ -123,7 +123,7 @@ public class ResData<T> {
             }
             if (e.getCause() instanceof RestException) {
                 code = ((RestException) e.getCause()).getCode();
-                msg = ((RestException) e.getCause()).getMessage();
+                msg = e.getCause().getMessage();
             }
             if (e instanceof RestClientResponseException) {
                 code = ((RestClientResponseException) e).getRawStatusCode();

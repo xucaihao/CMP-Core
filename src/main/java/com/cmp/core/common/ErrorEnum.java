@@ -30,7 +30,7 @@ public enum ErrorEnum {
     ERR_REPEATED_USER_NAME(105, "cloudmp.core.user.repeatedUserNameError", "用户名重复"),
     ERR_REGISTER_USER(106, "cloudmp.core.user.registerUserError", "注册用户失败"),
     ERR_ADD_MAPPING_BODY(107, "cloudmp.core.user.addUserMappingBodyError", "添加用户映射关系请求体错误"),
-    ERR_REPEATED_MAPPING(108, "cloudmp.core.user.repeatedUserMappingError", "改用户在此云上已添加用户映射"),
+    ERR_REPEATED_MAPPING(108, "cloudmp.core.user.repeatedUserMappingError", "该用户在此云上已添加用户映射"),
     ERR_ADD_MAPPING(109, "cloudmp.core.user.addUserMappingError", "添加用户映射失败"),
     ERR_USER_AUTHENTICATE(110, "cloudmp.core.user.cloudUserAuthenticateError", "云账号认证失败"),
     ERR_UPDATE_MAPPING_BODY(111, "cloudmp.core.user.updateUserMappingBodyError", "修改用户映射关系请求体错误"),
@@ -42,20 +42,20 @@ public enum ErrorEnum {
     ERR_DEFAULT_CODE(0, "cloudmp.core.cloud.unknownError", "未知错误");
 
 
-    private int code;
+    private int errorCode;
 
     private String message;
 
     private String desc;
 
-    ErrorEnum(int code, String message, String desc) {
-        this.code = code;
+    ErrorEnum(int errorCode, String message, String desc) {
+        this.errorCode = errorCode;
         this.message = message;
         this.desc = desc;
     }
 
-    public int getCode() {
-        return code;
+    public int getErrorCode() {
+        return errorCode;
     }
 
     public String getMessage() {
@@ -68,8 +68,10 @@ public enum ErrorEnum {
 
     @Override
     public String toString() {
-        return "code=" + code +
-                ", message='" + message + '\'' +
-                ", desc='" + desc;
+        return "{\n" +
+                "\"errorCode\" : \"" + errorCode + "\",\n" +
+                "\"msg\" : \"" + message + "\",\n" +
+                "\"des\" : \"" + desc + "\"\n" +
+                "}";
     }
 }

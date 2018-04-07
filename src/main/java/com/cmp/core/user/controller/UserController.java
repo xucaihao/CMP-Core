@@ -1,5 +1,6 @@
 package com.cmp.core.user.controller;
 
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.IOUtils;
 import com.cmp.core.cloud.modules.CloudService;
 import com.cmp.core.common.BaseController;
@@ -153,7 +154,7 @@ public class UserController extends BaseController {
         ReqUser reqUser = JsonUtil.stringToObject(body, ReqUser.class);
         //校验请求体
         return checkModUserBody(reqUser)
-                .thenAccept(flag -> {
+                .thenCompose(flag -> {
                     if (!flag) {
                         throw new CoreException(ERR_UPDATE_USER_BODY);
                     }
@@ -163,8 +164,8 @@ public class UserController extends BaseController {
                             .findAny()
                             .orElseThrow(() -> new CoreException(ERR_CMP_USER_NOT_FOUND));
                     //请求体转换
-                    buildCmpUser(reqUser, cmpUser)
-                            .thenAccept(resUser -> {
+                    return buildCmpUser(reqUser, cmpUser)
+                            .thenCompose(resUser -> {
                                 users.stream().filter(vo ->
                                         //校验重名
                                         resUser.getUserName().equals(vo.getUserName())
@@ -174,14 +175,16 @@ public class UserController extends BaseController {
                                             throw new CoreException(ERR_REPEATED_USER_NAME);
                                         });
                                 //更新数据库
-                                userService.updateUser(resUser)
-                                        .thenAccept(updateFlag -> {
+                                return userService.updateUser(resUser)
+                                        .thenApply(updateFlag -> {
                                             if (!updateFlag) {
                                                 throw new CoreException(ERR_UPDATE_USER);
+                                            } else {
+                                                return userService.describeUserAttribute(userId);
                                             }
                                         });
                             });
-                }).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                }).thenApply(user -> okFormat(OK.value(), new ResUser(user), response))
                 .exceptionally(e -> badFormat(e, response));
     }
 
@@ -198,20 +201,28 @@ public class UserController extends BaseController {
             final HttpServletResponse response,
             @PathVariable final String userId) {
         return CompletableFuture.supplyAsync(() -> userService.describeUserAttribute(userId))
-                .thenAccept(cmpUser ->
-                        //删除用户、删除用户映射关系
-                        userService.deleteUser(userId)
-                                .thenCombine(userService.delUserMappingsByUserId(userId),
-                                        (userFlag, mappingFlag) -> {
-                                            if (!userFlag) {
-                                                throw new CoreException(ERR_DELETE_USER);
-                                            }
+                .thenCompose(cmpUser -> {
+                            //删除用户映射关系
+                            List<UserMappingEntity> mappings = userService.describeUserMappings(userId);
+                            if (!CollectionUtils.isEmpty(mappings)) {
+                                userService.delUserMappingsByUserId(userId)
+                                        .thenAccept(mappingFlag -> {
                                             if (!mappingFlag) {
                                                 throw new CoreException(ERR_DELETE_USER_MAPPING);
                                             }
-                                            return null;
-                                        })
-                ).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                                        });
+                            }
+                            //删除用户
+                            return userService.deleteUser(userId)
+                                    .thenApply(userFlag -> {
+                                        if (!userFlag) {
+                                            throw new CoreException(ERR_DELETE_USER);
+                                        }
+                                        return null;
+                                    });
+                        }
+                ).thenApply(res ->
+                        okFormat(NO_CONTENT.value(), null, response))
                 .exceptionally(e -> badFormat(e, response));
     }
 
@@ -374,7 +385,7 @@ public class UserController extends BaseController {
                     }
                     boolean nameFlag = userService.describeCmpUsers().stream()
                             .anyMatch(u -> user.getUserName().equals(u.getUserName()));
-                    if (!nameFlag) {
+                    if (nameFlag) {
                         throw new CoreException(ERR_REPEATED_USER_NAME);
                     }
                     return true;

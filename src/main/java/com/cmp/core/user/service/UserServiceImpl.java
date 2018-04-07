@@ -2,6 +2,7 @@ package com.cmp.core.user.service;
 
 import com.cmp.core.common.Constance;
 import com.cmp.core.common.CoreException;
+import com.cmp.core.common.JsonUtil;
 import com.cmp.core.user.dao.UserDao;
 import com.cmp.core.user.model.CmpUser;
 import com.cmp.core.user.model.Role;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -107,10 +109,11 @@ public class UserServiceImpl implements UserService {
      * @return 操作结果
      */
     @Override
+    @SuppressWarnings("unchecked")
     public CompletionStage<Boolean> addUser(CmpUser user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                userDao.addUser(user);
+                userDao.addUser(JsonUtil.stringToObject(JsonUtil.objectToString(user), Map.class));
                 return true;
             } catch (Exception e) {
                 logger.error("addUser in sql error: {}", e);
@@ -126,10 +129,11 @@ public class UserServiceImpl implements UserService {
      * @return 操作结果
      */
     @Override
+    @SuppressWarnings("unchecked")
     public CompletionStage<Boolean> updateUser(CmpUser user) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                userDao.updateUser(user);
+                userDao.updateUser(JsonUtil.stringToObject(JsonUtil.objectToString(user), Map.class));
                 return true;
             } catch (Exception e) {
                 logger.error("updateUser in sql error: {}", e);

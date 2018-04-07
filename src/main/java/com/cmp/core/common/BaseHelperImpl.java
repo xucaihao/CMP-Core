@@ -232,9 +232,9 @@ public class BaseHelperImpl implements BaseHelper {
                         if (CollectionUtils.isEmpty(cloudTypes)) {
                             return new ArrayList<CloudEntity>();
                         }
-                        //将可对接云平台已id作为key存入Map中
+                        //将可对接云平台以类型作为key存入Map中
                         Map<String, CloudTypeEntity> cloudTypeMap = cloudTypes.stream()
-                                .collect(toMap(CloudTypeEntity::getId, Function.identity()));
+                                .collect(toMap(CloudTypeEntity::getTypeValue, Function.identity()));
                         // 根据可对接云平台类型筛选云列表
                         clouds = clouds.stream()
                                 .filter(cloud -> cloudTypeMap.containsKey(cloud.getCloudType()))

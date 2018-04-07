@@ -245,12 +245,12 @@ public class BaseController {
             //当前线程中自定义异常
             if (e instanceof CoreException) {
                 ErrorEnum errorEnum = ((CoreException) e).getErrorEnum();
-                msg = JsonUtil.objectToString(errorEnum);
+                msg = errorEnum.toString();
             }
             //其他线程中自定义异常
             if (e.getCause() instanceof CoreException) {
                 ErrorEnum errorEnum = ((CoreException) e.getCause()).getErrorEnum();
-                msg = JsonUtil.objectToString(errorEnum);
+                msg = errorEnum.toString();
             }
             if (e.getCause() instanceof RestException) {
                 code = ((RestException) e.getCause()).getCode();

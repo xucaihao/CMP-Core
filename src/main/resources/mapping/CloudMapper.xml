@@ -17,25 +17,6 @@
         <result column="description" property="description"/>
     </resultMap>
 
-    <!-- 格式化云类型对象 -->
-    <resultMap type="CloudTypeEntity" id="CloudTypeEntity">
-        <result column="id" property="id"/>
-        <result column="type_name" property="typeName"/>
-        <result column="type_value" property="typeValue"/>
-        <result column="disable" property="disable"/>
-    </resultMap>
-
-    <!-- 格式化适配器对象 -->
-    <resultMap type="CloudAdapterEntity" id="CloudAdapterEntity">
-        <result column="id" property="id"/>
-        <result column="adapter_name" property="adapterName"/>
-        <result column="adapter_protocol" property="adapterProtocol"/>
-        <result column="adapter_ip" property="adapterIp"/>
-        <result column="adapter_port" property="adapterPort"/>
-        <result column="description" property="description"/>
-        <result column="cloud_type" property="cloudType"/>
-    </resultMap>
-
     <!-- 获取所有云实体 -->
     <select id="describeClouds" resultMap="CloudEntity">
 		 select * from tbl_cloud
@@ -52,32 +33,49 @@
 	</select>
 
     <!-- 通过id删除指定云实体 -->
-    <select id="deleteCloudById" parameterType="String">
-		delete * from tbl_cloud where cloud_id=#{cloudId}
-	</select>
+    <update id="deleteCloudById" parameterType="String">
+		delete from tbl_cloud where cloud_id=#{cloudId}
+	</update>
 
-    <!--TODO-->
     <!-- 添加云实体 -->
-    <select id="addCloud" parameterType="CloudEntity">
--- 		insert * from tbl_cloud where cloud_id=#{cloudId}
-	</select>
+    <insert id="addCloud" parameterType="Map">
+        insert into tbl_cloud( cloud_id,cloud_name,cloud_type,visibility,cloud_protocol,cloud_ip,cloud_port,status,description)
+        values (#{cloudId},#{cloudName},#{cloudType},#{visibility},#{cloudProtocol},#{cloudIp},#{cloudPort},#{status},#{description})
+    </insert>
 
-    <!--TODO-->
     <!-- 更新云实体 -->
-    <select id="updateCloud" parameterType="CloudEntity">
-		-- 		insert * from tbl_cloud where cloud_id=#{cloudId}
-	</select>
+    <update id="updateCloud" parameterType="Map">
+        update  tbl_cloud set cloud_name=#{cloudName},description=#{description} where cloud_id=#{cloudId}
+    </update>
+
+    <!-- 格式化云类型对象 -->
+    <resultMap type="CloudTypeEntity" id="CloudTypeEntity">
+        <result column="id" property="id"/>
+        <result column="type_name" property="typeName"/>
+        <result column="type_value" property="typeValue"/>
+        <result column="disable" property="disable"/>
+    </resultMap>
 
     <!-- 获取所有云类型实体 -->
     <select id="describeCloudTypes" resultMap="CloudTypeEntity">
         select * from tbl_cloud_type
     </select>
 
-    <!--TODO-->
     <!-- 更新云类型实体 -->
-    <select id="updateCloudType" parameterType="CloudTypeEntity">
-        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
-    </select>
+    <update id="updateCloudType" parameterType="Map">
+        update  tbl_cloud_type set disable=#{disable} where id=#{id}
+    </update>
+
+    <!-- 格式化适配器对象 -->
+    <resultMap type="CloudAdapterEntity" id="CloudAdapterEntity">
+        <result column="id" property="id"/>
+        <result column="adapter_name" property="adapterName"/>
+        <result column="adapter_protocol" property="adapterProtocol"/>
+        <result column="adapter_ip" property="adapterIp"/>
+        <result column="adapter_port" property="adapterPort"/>
+        <result column="description" property="description"/>
+        <result column="cloud_type" property="cloudType"/>
+    </resultMap>
 
     <!-- 根据云类型查询云适配组件 -->
     <select id="describeCloudAdapterByCloudType" parameterType="String" resultMap="CloudAdapterEntity">

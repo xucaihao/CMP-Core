@@ -5,6 +5,7 @@ import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.cloud.model.CloudTypeEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CloudDao {
 
@@ -43,14 +44,14 @@ public interface CloudDao {
      *
      * @param cloud 云
      */
-    void addCloud(CloudEntity cloud);
+    void addCloud(Map<String, Object> cloud);
 
     /**
      * 更新云
      *
      * @param cloud 云
      */
-    void updateCloud(CloudEntity cloud);
+    void updateCloud(Map<String, Object> cloud);
 
     /**
      * 获取所有云类型
@@ -64,7 +65,7 @@ public interface CloudDao {
      *
      * @param cloudType 云类型
      */
-    void updateCloudType(CloudTypeEntity cloudType);
+    void updateCloudType(Map<String, Object> cloudType);
 
     /**
      * 获取所有云适配组件
