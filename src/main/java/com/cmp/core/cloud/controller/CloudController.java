@@ -282,6 +282,13 @@ public class CloudController extends BaseController {
                 .exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 更新适配组件路由地址
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 操作结果
+     */
     @PutMapping("/adapters/update")
     @ResponseBody
     public CompletionStage<JsonNode> updateCloudAdapter(
