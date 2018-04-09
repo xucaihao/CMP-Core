@@ -66,31 +66,30 @@
        select * from tbl_user_mapping where cmp_user_id=#{cmpUserId}
     </select>
 
-    <!--TODO-->
     <!-- 添加用户映射 -->
-    <select id="addUserMapping" parameterType="UserMappingEntity">
-        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
-    </select>
+    <insert id="addUserMapping" parameterType="Map">
+        insert into tbl_user_mapping( id,cmp_user_name,cmp_user_id,access_key,auth_info,cloud_id)
+        values (#{id},#{cmpUserName},#{cmpUserId},#{accessKey},#{authInfo},#{cloudId})
+    </insert>
 
-    <!--TODO-->
     <!-- 更新用户映射 -->
-    <select id="updateUserMapping" parameterType="UserMappingEntity">
-        -- 		insert * from tbl_cloud where cloud_id=#{cloudId}
-    </select>
-
-    <!-- 根据用户id删除用户映射关系 -->
-    <select id="delUserMappingsByCmpUserId" parameterType="String">
-        delete * from tbl_user_mapping where cmp_user_id=#{cmpUserId}
-    </select>
+    <update id="updateUserMapping" parameterType="Map">
+        update  tbl_user_mapping set access_key=#{accessKey},auth_info=#{authInfo} where id=#{id}
+    </update>
 
     <!-- 根据id删除用户映射关系 -->
-    <select id="delUserMappingsById" parameterType="String">
-        delete * from tbl_user_mapping where id=#{mappingId}
-    </select>
-
-    <!-- 据云id删除用户映射关系 -->
-    <update id="delUserMappingsByCloudId" parameterType="String">
-        delete from tbl_user_mapping where cloud_id=#{cloudId}
+    <update id="delUserMappingsById" parameterType="String">
+        delete from tbl_user_mapping where id=#{mappingId}
     </update>
+
+    <!--&lt;!&ndash; 根据用户id删除用户映射关系 &ndash;&gt;-->
+    <!--<select id="delUserMappingsByCmpUserId" parameterType="String">-->
+        <!--delete * from tbl_user_mapping where cmp_user_id=#{cmpUserId}-->
+    <!--</select>-->
+
+    <!--&lt;!&ndash; 据云id删除用户映射关系 &ndash;&gt;-->
+    <!--<update id="delUserMappingsByCloudId" parameterType="String">-->
+        <!--delete from tbl_user_mapping where cloud_id=#{cloudId}-->
+    <!--</update>-->
 
 </mapper>

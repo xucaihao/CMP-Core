@@ -5,6 +5,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.MultiValueMap;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 import static com.cmp.core.common.Constance.HEADER_CLOUD_INFO;
@@ -14,7 +16,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 public class HttpEntityUtil {
 
-    private HttpHeaders headers;
+    private HttpHeaders headers = new HttpHeaders();
 
     /**
      * 初始换http请求头部
@@ -33,7 +35,11 @@ public class HttpEntityUtil {
         headers.set(ACCEPT, HTTP_MSG_TYPE);
         headers.set(CONTENT_TYPE, HTTP_MSG_TYPE);
         if (null != cloud) {
-            headers.set(HEADER_CLOUD_INFO, JsonUtil.objectToString(cloud));
+            try {
+                headers.set(HEADER_CLOUD_INFO, URLEncoder.encode(JsonUtil.objectToString(cloud), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -55,7 +61,7 @@ public class HttpEntityUtil {
      * @return HttpEntity
      */
     public HttpEntity<String> buildHttpEntity() {
-        return new HttpEntity<String>(headers);
+        return new HttpEntity<>(headers);
     }
 
     /**
@@ -65,7 +71,7 @@ public class HttpEntityUtil {
      * @return HttpEntity
      */
     public HttpEntity<String> buildHttpEntity(String body) {
-        return new HttpEntity<String>(body, headers);
+        return new HttpEntity<>(body, headers);
     }
 
     /**
@@ -75,6 +81,6 @@ public class HttpEntityUtil {
      * @return HttpEntity
      */
     public HttpEntity<MultiValueMap<String, Object>> buildHttpEntity(MultiValueMap<String, Object> body) {
-        return new HttpEntity<MultiValueMap<String, Object>>(body, headers);
+        return new HttpEntity<>(body, headers);
     }
 }

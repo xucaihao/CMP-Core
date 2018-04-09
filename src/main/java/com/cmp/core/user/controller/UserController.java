@@ -33,7 +33,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.cmp.core.common.Constance.CMP_V1;
 import static com.cmp.core.common.ErrorEnum.*;
 import static org.springframework.http.HttpStatus.*;
 
@@ -262,7 +261,7 @@ public class UserController extends BaseController {
         String body = IOUtils.read(reader);
         ReqAddMapping mapping = JsonUtil.stringToObject(body, ReqAddMapping.class);
         //校验请求体
-        return checkAddMappingBody(mapping).thenAccept(flag ->
+        return checkAddMappingBody(mapping).thenCompose(flag ->
                 //转换请求体
                 buildAddUserMapping(mapping)
                         .thenCompose(userMapping ->
@@ -271,10 +270,11 @@ public class UserController extends BaseController {
                                         .thenCompose(authenticateFlag ->
                                                 //插入数据库记录
                                                 userService.addUserMapping(userMapping))
-                                        .thenAccept(addFlag -> {
+                                        .thenApply(addFlag -> {
                                             if (!addFlag) {
                                                 throw new CoreException(ERR_ADD_MAPPING);
                                             }
+                                            return null;
                                         })))
                 .thenApply(x -> okFormat(CREATED.value(), null, response))
                 .exceptionally(e -> badFormat(e, response));
@@ -307,16 +307,17 @@ public class UserController extends BaseController {
                     }
                     UserMappingEntity userMapping = userService.describeUserMappingById(mappingId);
                     //转换请求体
-                    return buildUpdateUserMapping(mapping, userMapping).thenAccept(resUserMapping ->
+                    return buildUpdateUserMapping(mapping, userMapping).thenCompose(resUserMapping ->
                             //云账号认证
                             authenticate(resUserMapping.getCloudId(), resUserMapping.getAuthInfo())
                                     .thenCompose(authenticateFlag ->
                                             //更新数据库记录
                                             userService.updateUserMapping(resUserMapping))
-                                    .thenAccept(updateFlag -> {
+                                    .thenApply(updateFlag -> {
                                         if (!updateFlag) {
                                             throw new CoreException(ERR_UPDATE_MAPPING);
                                         }
+                                        return null;
                                     }));
                 }).thenApply(x -> okFormat(NO_CONTENT.value(), null, response))
                 .exceptionally(e -> badFormat(e, response));
@@ -335,12 +336,13 @@ public class UserController extends BaseController {
             final HttpServletResponse response, @PathVariable final String mappingId) {
         return CompletableFuture.supplyAsync(() ->
                 userService.describeUserMappingById(mappingId))
-                .thenAccept(mapping ->
+                .thenCompose(mapping ->
                         userService.delUserMappingsById(mappingId)
-                                .thenAccept(mappingFlag -> {
+                                .thenApply(mappingFlag -> {
                                     if (!mappingFlag) {
                                         throw new CoreException(ERR_DELETE_USER_MAPPING);
                                     }
+                                    return null;
                                 }))
                 .thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
                 .exceptionally(e -> badFormat(e, response));
@@ -354,7 +356,7 @@ public class UserController extends BaseController {
      * @return 认证结果
      */
     private CompletionStage<Boolean> authenticate(String cloudId, String authInfo) {
-        String url = CMP_V1 + "/authenticate";
+        String url = "/authenticate";
         return cloudService.describeCloudById(cloudId)
                 .thenCompose(cloud -> {
                             cloud.setAuthInfo(authInfo);
@@ -477,8 +479,8 @@ public class UserController extends BaseController {
             resMapping.setCmpUserName(mapping.getCmpUserName());
             resMapping.setCloudId(mapping.getCloudId());
             resMapping.setAccessKey(mapping.getAccessKey());
-            String authInfo = "accessKey: " + mapping.getAccessKey()
-                    + " secret: " + mapping.getSecret();
+            String authInfo = "{\n" + "\"accessKey\" : \"" + mapping.getAccessKey() + "\",\n" +
+                    "\"secret\" : \"" + mapping.getSecret() + "\"\n" + "}";
             resMapping.setAuthInfo(authInfo);
             return resMapping;
         });
@@ -500,8 +502,8 @@ public class UserController extends BaseController {
             resMapping.setCmpUserName(userMapping.getCmpUserName());
             resMapping.setCloudId(userMapping.getCloudId());
             resMapping.setAccessKey(mapping.getAccessKey());
-            String authInfo = "accessKey: " + mapping.getAccessKey()
-                    + " secret: " + mapping.getSecret();
+            String authInfo = "{\n" + "\"accessKey\" : \"" + mapping.getAccessKey() + "\",\n" +
+                    "\"secret\" : \"" + mapping.getSecret() + "\"\n" + "}";
             resMapping.setAuthInfo(authInfo);
             return resMapping;
         });
