@@ -21,6 +21,10 @@ public enum ErrorEnum {
     ERR_ADD_CLOUD(61, "cloudmp.core.cloud.addCloudError", "添加云失败"),
     ERR_MODIFY_CLOUD_TYPE_BODY(62, "cloudmp.core.cloud.modifyCloudTypeBodyError", "修改云类型请求体错误"),
     ERR_UPDATE_CLOUD_TYPE(63, "cloudmp.core.cloud.updateCloudTypeError", "更新云类型失败"),
+    ERR_MODIFY_CLOUD_ADAPTER_BODY(64, "cloudmp.core.cloud.modifyCloudAdapterBodyError", "修改云适配组件请求体错误"),
+    ERR_REPEATED_CLOUD_ADAPTER_IP(65, "cloudmp.core.cloud.repeatedCloudAdapterIpError.error", "云适配组件路由地址重复"),
+    ERR_CLOUD_ADAPTER_CONNECT_FAIL(66, "cloudmp.core.cloud.connectCloudAdapterFailError", "云连接失败"),
+    ERR_UPDATE_CLOUD_ADAPTER(67, "cloudmp.core.cloud.updateCloudAdapterError", "更新云适配器失败"),
 
     //##########user错误code(101——150)##########
     ERR_CMP_USER_NOT_FOUND(101, "cloudmp.core.user.cmpUserNotFoundError", "没有找到用户"),

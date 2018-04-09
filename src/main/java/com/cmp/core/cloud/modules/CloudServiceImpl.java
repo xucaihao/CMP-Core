@@ -4,6 +4,7 @@ import com.cmp.core.cloud.dao.CloudDao;
 import com.cmp.core.cloud.model.CloudAdapterEntity;
 import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.cloud.model.CloudTypeEntity;
+import com.cmp.core.cloud.model.req.ReqModCloudAdapter;
 import com.cmp.core.common.CoreException;
 import com.cmp.core.common.JsonUtil;
 import org.slf4j.Logger;
@@ -156,6 +157,17 @@ public class CloudServiceImpl implements CloudService {
     }
 
     /**
+     * 查询云适配组件列表
+     *
+     * @return 云适配组件列表
+     */
+    @Override
+    public CompletionStage<List<CloudAdapterEntity>> describeCloudAdapters() {
+        return CompletableFuture.supplyAsync(() ->
+                cloudDao.describeCloudAdapters());
+    }
+
+    /**
      * 根据云类型查询云适配组件
      *
      * @param cloudType 云类型
@@ -166,5 +178,26 @@ public class CloudServiceImpl implements CloudService {
         return CompletableFuture.supplyAsync(() ->
                 Optional.ofNullable(cloudDao.describeCloudAdapterByCloudType(cloudType))
                         .orElseThrow(() -> new CoreException(ERR_CLOUD_ADAPTER_NOT_FOUND)));
+    }
+
+    /**
+     * 更新适配组件路由地址
+     *
+     * @param reqModCloudAdapter 请求体
+     * @return 操作结果
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public CompletionStage<Boolean> updateCloudAdapter(ReqModCloudAdapter reqModCloudAdapter) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Map map = JsonUtil.stringToObject(JsonUtil.objectToString(reqModCloudAdapter), Map.class);
+                cloudDao.updateCloudAdapter(map);
+                return true;
+            } catch (Exception e) {
+                logger.error("updateCloudAdapter in sql error: {}", e);
+                return false;
+            }
+        });
     }
 }

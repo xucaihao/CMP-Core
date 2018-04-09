@@ -3,6 +3,7 @@ package com.cmp.core.cloud.modules;
 import com.cmp.core.cloud.model.CloudAdapterEntity;
 import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.cloud.model.CloudTypeEntity;
+import com.cmp.core.cloud.model.req.ReqModCloudAdapter;
 
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -72,11 +73,26 @@ public interface CloudService {
     CompletionStage<Boolean> deleteCloudById(String cloudId);
 
     /**
+     * 查询云适配组件列表
+     *
+     * @return 云适配组件列表
+     */
+    CompletionStage<List<CloudAdapterEntity>> describeCloudAdapters();
+
+    /**
      * 根据云类型查询云适配组件
      *
      * @param cloudType 云类型
      * @return 云适配组件
      */
     CompletionStage<CloudAdapterEntity> describeCloudAdapterByCloudType(String cloudType);
+
+    /**
+     * 更新适配组件路由地址
+     *
+     * @param reqModCloudAdapter 请求体
+     * @return 操作结果
+     */
+    CompletionStage<Boolean> updateCloudAdapter(ReqModCloudAdapter reqModCloudAdapter);
 
 }

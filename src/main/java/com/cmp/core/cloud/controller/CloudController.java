@@ -5,7 +5,9 @@ import com.cmp.core.cloud.model.CloudEntity;
 import com.cmp.core.cloud.model.CloudTypeEntity;
 import com.cmp.core.cloud.model.req.ReqCreCloud;
 import com.cmp.core.cloud.model.req.ReqModCloud;
+import com.cmp.core.cloud.model.req.ReqModCloudAdapter;
 import com.cmp.core.cloud.model.req.ReqModCloudType;
+import com.cmp.core.cloud.model.res.ResCloudAdapters;
 import com.cmp.core.cloud.model.res.ResCloudEntity;
 import com.cmp.core.cloud.model.res.ResCloudTypesEntity;
 import com.cmp.core.cloud.model.res.ResCloudsEntity;
@@ -266,6 +268,51 @@ public class CloudController extends BaseController {
                 .exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 查询云适配组件列表
+     *
+     * @param response http响应
+     * @return 云适配组件列表
+     */
+    @RequestMapping("/adapters")
+    @ResponseBody
+    public CompletionStage<JsonNode> describeCloudAdapters(final HttpServletResponse response) {
+        return cloudService.describeCloudAdapters()
+                .thenApply(cloudAdapters -> okFormat(OK.value(), new ResCloudAdapters(cloudAdapters), response))
+                .exceptionally(e -> badFormat(e, response));
+    }
+
+    @PutMapping("/adapters/update")
+    @ResponseBody
+    public CompletionStage<JsonNode> updateCloudAdapter(
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqModCloudAdapter reqBody = JsonUtil.stringToObject(body, ReqModCloudAdapter.class);
+        //校验请求体
+        return checkModCloudAdapterBody(reqBody)
+                .thenCompose(flag -> {
+                    if (!flag) {
+                        throw new CoreException(ERR_MODIFY_CLOUD_ADAPTER_BODY);
+                    }
+                    //判断适配组件
+                    return checkCloudAdapter(reqBody)
+                            .thenCompose(cloudAdapters ->
+                                    //更新数据库
+                                    cloudService.updateCloudAdapter(reqBody)
+                                            .thenApply(updateFlag -> {
+                                                if (!updateFlag) {
+                                                    throw new CoreException(ERR_UPDATE_CLOUD_ADAPTER);
+                                                }
+                                                return null;
+                                            })
+                            );
+                }).thenApply(res -> okFormat(NO_CONTENT.value(), null, response))
+                .exceptionally(e -> badFormat(e, response));
+    }
+
     private CompletionStage<Boolean> checkCreCloudBody(ReqCreCloud cloud) {
         return CompletableFuture.supplyAsync(() -> {
                     if (null != cloud.getVisibility()) {
@@ -279,7 +326,6 @@ public class CloudController extends BaseController {
                             case PRIVATE:
                                 if (null != cloud.getCloudName()
                                         && null != cloud.getDescription()
-                                        && null != cloud.getCloudProtocol()
                                         && null != cloud.getCloudIp()
                                         && null != cloud.getCloudPort()) {
                                     return true;
@@ -305,6 +351,14 @@ public class CloudController extends BaseController {
         );
     }
 
+    private CompletionStage<Boolean> checkModCloudAdapterBody(ReqModCloudAdapter reqBody) {
+        return CompletableFuture.supplyAsync(() ->
+                (null != reqBody.getCloudType()
+                        && null != reqBody.getAdapterIp()
+                        && null != reqBody.getAdapterPort())
+        );
+    }
+
     private CompletionStage<CloudEntity> convertCreCloudBody(ReqCreCloud reqCloud) {
         return CompletableFuture.supplyAsync(() -> {
             CloudEntity resCloud = new CloudEntity();
@@ -321,7 +375,7 @@ public class CloudController extends BaseController {
                     resCloud.setCloudPort("defalut");
                     break;
                 case PRIVATE:
-                    resCloud.setCloudProtocol(reqCloud.getCloudProtocol());
+                    resCloud.setCloudProtocol("http");
                     resCloud.setCloudIp(reqCloud.getCloudIp());
                     resCloud.setCloudPort(reqCloud.getCloudPort());
                     break;
@@ -378,6 +432,31 @@ public class CloudController extends BaseController {
                         if (!PingUtil.ping(cloud.getCloudIp(), Integer.valueOf(cloud.getCloudPort()))) {
                             throw new CoreException(ERR_CLOUD_CONNECT_FAIL);
                         }
+                    }
+                    return true;
+                });
+    }
+
+    private CompletionStage<Boolean> checkCloudAdapter(ReqModCloudAdapter adapter) {
+        return cloudService.describeCloudAdapters()
+                .thenApply(adapters -> {
+                    //判断适配组件是否存在
+                    adapters.stream().filter(vo ->
+                            adapter.getCloudType().equals(vo.getCloudType()))
+                            .findAny()
+                            .orElseThrow(() -> new CoreException(ERR_CLOUD_ADAPTER_NOT_FOUND));
+                    //判断适配组件路由地址是否被占用
+                    adapters.stream().filter(vo ->
+                            !adapter.getCloudType().equals(vo.getCloudType())
+                                    && adapter.getAdapterIp().equals(vo.getAdapterIp())
+                                    && adapter.getAdapterPort().equals(vo.getAdapterPort()))
+                            .findAny()
+                            .ifPresent(x -> {
+                                throw new CoreException(ERR_REPEATED_CLOUD_ADAPTER_IP);
+                            });
+                    //判断路由地址是否能够连接
+                    if (!PingUtil.ping(adapter.getAdapterIp(), Integer.valueOf(adapter.getAdapterPort()))) {
+                        throw new CoreException(ERR_CLOUD_ADAPTER_CONNECT_FAIL);
                     }
                     return true;
                 });

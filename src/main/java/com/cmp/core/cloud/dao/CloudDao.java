@@ -81,4 +81,11 @@ public interface CloudDao {
      * @return 云适配组件
      */
     CloudAdapterEntity describeCloudAdapterByCloudType(String cloudType);
+
+    /**
+     * 更新适配组件路由地址
+     *
+     * @param cloudAdapter 适配组件路由地址
+     */
+    void updateCloudAdapter(Map<String, Object> cloudAdapter);
 }

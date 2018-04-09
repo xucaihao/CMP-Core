@@ -78,8 +78,18 @@
     </resultMap>
 
     <!-- 根据云类型查询云适配组件 -->
+    <select id="describeCloudAdapters" resultMap="CloudAdapterEntity">
+        select * from tbl_cloud_adapter
+    </select>
+
+    <!-- 根据云类型查询云适配组件 -->
     <select id="describeCloudAdapterByCloudType" parameterType="String" resultMap="CloudAdapterEntity">
         select * from tbl_cloud_adapter where cloud_type=#{cloudType}
     </select>
+
+    <!-- 更新云实体 -->
+    <update id="updateCloudAdapter" parameterType="Map">
+        update tbl_cloud_adapter set adapter_ip=#{adapterIp},adapter_port=#{adapterPort} where cloud_type=#{cloudType}
+    </update>
 
 </mapper>
