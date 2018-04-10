@@ -234,7 +234,7 @@ public class BaseController {
         String method = e1.getMethodName().contains("lambda")
                 ? e1.getMethodName().split("\\$")[1] : e1.getMethodName();
         final String log = e1.getFileName().replace(".java", "") + "::" + method;
-        logger.info("invoke: {}, error: {}", log, e);
+        logger.error("invoke: {}, error: {}", log, e);
         return dealThrowable(e, response);
     }
 
