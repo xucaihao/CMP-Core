@@ -1,5 +1,7 @@
 package com.cmp.core.instance.model.res;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class ResInstanceInfo {
@@ -15,6 +17,11 @@ public class ResInstanceInfo {
      * 实例状态
      */
     private String status;
+
+    /**
+     * 地域
+     */
+    private String regionId;
 
     /**
      * 可用区id
@@ -39,6 +46,7 @@ public class ResInstanceInfo {
     /**
      * 操作系统名称
      */
+    @JsonProperty("osname")
     private String osName;
 
     /**
@@ -111,6 +119,14 @@ public class ResInstanceInfo {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getRegionId() {
+        return regionId;
+    }
+
+    public void setRegionId(String regionId) {
+        this.regionId = regionId;
     }
 
     public String getZoneId() {
