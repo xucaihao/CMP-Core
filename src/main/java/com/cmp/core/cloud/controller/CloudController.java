@@ -325,14 +325,12 @@ public class CloudController extends BaseController {
                     if (null != cloud.getVisibility()) {
                         switch (cloud.getVisibility()) {
                             case PUBLIC:
-                                if (null != cloud.getCloudName()
-                                        && null != cloud.getDescription()) {
+                                if (null != cloud.getCloudName()) {
                                     return true;
                                 }
                                 break;
                             case PRIVATE:
                                 if (null != cloud.getCloudName()
-                                        && null != cloud.getDescription()
                                         && null != cloud.getCloudIp()
                                         && null != cloud.getCloudPort()) {
                                     return true;
