@@ -8,6 +8,8 @@ public class CloudTypeEntity {
 
     private String typeValue;
 
+    private String visibility;
+
     private boolean disable;
 
     public String getId() {
@@ -32,6 +34,14 @@ public class CloudTypeEntity {
 
     public void setTypeValue(String typeValue) {
         this.typeValue = typeValue;
+    }
+
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
     }
 
     public boolean isDisable() {

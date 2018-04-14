@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50524
 File Encoding         : 65001
 
-Date: 2018-04-09 23:46:47
+Date: 2018-04-14 15:24:37
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -69,14 +69,16 @@ CREATE TABLE `tbl_cloud_type` (
   `type_name` varchar(20) COLLATE utf8_bin NOT NULL COMMENT '云类型名',
   `type_value` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '云类型值',
   `disable` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '启用状态',
+  `visibility` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '可见类型',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- ----------------------------
 -- Records of tbl_cloud_type
 -- ----------------------------
-INSERT INTO `tbl_cloud_type` VALUES ('1', '阿里云', 'ali-cloud', '1');
-INSERT INTO `tbl_cloud_type` VALUES ('2', '腾讯云', 'tencent-cloud', '0');
+INSERT INTO `tbl_cloud_type` VALUES ('1', '阿里云', 'ali-cloud', '1', 'PUBLIC');
+INSERT INTO `tbl_cloud_type` VALUES ('2', '腾讯云', 'tencent-cloud', '1', 'PUBLIC');
+INSERT INTO `tbl_cloud_type` VALUES ('3', '华三云', 'h3c-cloud', '0', 'PRIVATE');
 
 -- ----------------------------
 -- Table structure for tbl_user
@@ -109,7 +111,7 @@ CREATE TABLE `tbl_user_mapping` (
   `cmp_user_id` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '用户id',
   `cmp_user_name` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '用户登录名',
   `access_key` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '云accessKey',
-  `auth_info` varchar(100) COLLATE utf8_bin NOT NULL COMMENT '云上用户认证信息',
+  `auth_info` varchar(200) COLLATE utf8_bin NOT NULL COMMENT '云上用户认证信息',
   `cloud_id` varchar(36) COLLATE utf8_bin NOT NULL COMMENT '云id',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -117,5 +119,6 @@ CREATE TABLE `tbl_user_mapping` (
 -- ----------------------------
 -- Records of tbl_user_mapping
 -- ----------------------------
-INSERT INTO `tbl_user_mapping` VALUES ('0659b726-d71b-418c-9ea8-6c88a4662b7a', 'haj3282f-cf9f-411c-a054-8df3b65aj76a', 'gxw', 'LTAII4iyF616kwJC', '{\n\"accessKey\" : \"LTAII4iyF616kwJC\",\n\"secret\" : \"05SOEY3lNlPvdewJb2iJWzHGrxQpdK\"\n}', '1');
+INSERT INTO `tbl_user_mapping` VALUES ('0659b726-d71b-418c-9ea8-6c88a4662b7a', 'haj3282f-cf9f-411c-a054-8df3b65aj76a', 'gxw', 'LTAIRmS5yVTpnl5m', '{\n\"accessKey\" : \"LTAIRmS5yVTpnl5m\",\n\"secret\" : \"uroHDLzk1Ln8HoR9d1NYEt3e4bJLUR\"\n}', '1');
+INSERT INTO `tbl_user_mapping` VALUES ('0659b726-d71b-418c-9ea8-6c88a4662b7b', 'haj3282f-cf9f-411c-a054-8df3b65aj76a', 'gxw', 'LTAIRmS5yVTpnl5m', '{\r\n\"accessKey\" : \"AKIDXu3yf8wL5bsuhGMfV5RYQ4TeaGhtsY1F\",\r\n\"secret\" : \"5wYv3xc2D9qIVTChwwjHaeT3PWP3Scki\"\r\n}', '2');
 INSERT INTO `tbl_user_mapping` VALUES ('ba02ed9b-5576-45df-a619-960f2afbe3e2', 'be59d9c8-cf9f-411c-a054-8df3b65152d4', 'xuhao', 'LTAII4iyF616kwJC', '{\n\"accessKey\" : \"LTAII4iyF616kwJC\",\n\"secret\" : \"05SOEY3lNlPvdewJb2iJWzHGrxQpdK\"\n}', '1');

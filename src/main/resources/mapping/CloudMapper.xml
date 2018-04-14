@@ -53,6 +53,7 @@
         <result column="id" property="id"/>
         <result column="type_name" property="typeName"/>
         <result column="type_value" property="typeValue"/>
+        <result column="visibility" property="visibility"/>
         <result column="disable" property="disable"/>
     </resultMap>
 
