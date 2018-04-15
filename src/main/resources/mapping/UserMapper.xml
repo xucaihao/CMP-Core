@@ -82,14 +82,15 @@
         delete from tbl_user_mapping where id=#{mappingId}
     </update>
 
-    <!--&lt;!&ndash; 根据用户id删除用户映射关系 &ndash;&gt;-->
-    <!--<select id="delUserMappingsByCmpUserId" parameterType="String">-->
-        <!--delete * from tbl_user_mapping where cmp_user_id=#{cmpUserId}-->
-    <!--</select>-->
+    <!-- 据云id删除用户映射关系 -->
+    <update id="delUserMappingsByCloudId" parameterType="String">
+        delete from tbl_user_mapping where cloud_id=#{cloudId}
+    </update>
 
-    <!--&lt;!&ndash; 据云id删除用户映射关系 &ndash;&gt;-->
-    <!--<update id="delUserMappingsByCloudId" parameterType="String">-->
-        <!--delete from tbl_user_mapping where cloud_id=#{cloudId}-->
-    <!--</update>-->
+    <!-- 根据用户id删除用户映射关系 -->
+    <select id="delUserMappingsByCmpUserId" parameterType="String">
+        delete from tbl_user_mapping where cmp_user_id=#{cmpUserId}
+    </select>
+
 
 </mapper>
