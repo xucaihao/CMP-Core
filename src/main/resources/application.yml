@@ -4,7 +4,7 @@ server:
 spring:
     datasource:
         name: test
-        url: jdbc:mysql://127.0.0.1:3306/cloudmp
+        url: jdbc:mysql://127.0.0.1:3306/cloudmp?useUnicode=true&characterEncoding=utf8
         username: root
         password: root
         type: com.alibaba.druid.pool.DruidDataSource
