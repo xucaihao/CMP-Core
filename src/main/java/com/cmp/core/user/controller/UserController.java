@@ -378,10 +378,9 @@ public class UserController extends BaseController {
      */
     private CompletionStage<Boolean> checkRegisterUserBody(ReqUser user) {
         return CompletableFuture.supplyAsync(() -> {
-                    boolean bodyFlag = (null != user.getUserName()
-                            && null != user.getPassword()
-                            && null != user.getPhone()
-                            && null != user.getPhone());
+                    boolean bodyFlag = (null != user.getRoleName()
+                            && null != user.getUserName()
+                            && null != user.getPassword());
                     if (!bodyFlag) {
                         throw new CoreException(ERR_REGISTER_USER_BODY);
                     }
@@ -454,7 +453,11 @@ public class UserController extends BaseController {
             } else {
                 resUser.setUserId(cmpUser.getUserId());
             }
-            resUser.setRoleName(Role.USER.toString());
+            if ("manager".equals(user.getRoleName().toLowerCase())) {
+                resUser.setRoleName(Role.MANAGER.toString());
+            } else {
+                resUser.setRoleName(Role.USER.toString());
+            }
             resUser.setUserName(user.getUserName());
             resUser.setPassword(user.getPassword());
             String token = "name: " + user.getUserName() + " password: " + user.getPassword();

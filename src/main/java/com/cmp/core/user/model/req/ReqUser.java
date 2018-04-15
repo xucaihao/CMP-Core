@@ -4,6 +4,8 @@ public class ReqUser {
 
     private String userName;
 
+    private String roleName;
+
     private String password;
 
     private String phone;
@@ -16,6 +18,14 @@ public class ReqUser {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public String getPassword() {
