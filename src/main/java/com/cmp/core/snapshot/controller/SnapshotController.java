@@ -1,8 +1,10 @@
-package com.cmp.core.image.controller;
+package com.cmp.core.snapshot.controller;
 
 import com.cmp.core.common.BaseController;
 import com.cmp.core.image.model.res.ResImageInfo;
 import com.cmp.core.image.model.res.ResImages;
+import com.cmp.core.snapshot.model.res.ResSnapshotInfo;
+import com.cmp.core.snapshot.model.res.ResSnapshots;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,8 @@ import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.OK;
 
 @Controller
-public class ImageController extends BaseController {
+@RequestMapping("")
+public class SnapshotController extends BaseController {
 
     /**
      * 查询镜像列表
@@ -27,32 +30,32 @@ public class ImageController extends BaseController {
      * @param response http响应
      * @return 镜像列表
      */
-    @RequestMapping("/images")
+    @RequestMapping("/snapshots")
     @ResponseBody
-    public CompletionStage<JsonNode> describeImages(
+    public CompletionStage<JsonNode> describeSnapshots(
             final HttpServletRequest request, final HttpServletResponse response) {
         if (null != request.getHeader(HEADER_CLOUD_ID)) {
             return getCloudEntity(request).thenCompose(cloud ->
-                    httpGet("/images", ResImages.class, cloud)
+                    httpGet("/snapshots", ResSnapshots.class, cloud)
                             .thenApply(resData -> {
-                                List<ResImageInfo> images = resData.getData().getImages();
-                                addCloudInfo(images, cloud);
-                                return okFormat(resData.getCode(), new ResImages(images), response);
+                                List<ResSnapshotInfo> snapshots = resData.getData().getSnapshots();
+                                addCloudInfo(snapshots, cloud);
+                                return okFormat(resData.getCode(), new ResSnapshots(snapshots), response);
                             })
             ).exceptionally(e -> badFormat(e, response));
         } else {
             return getAllCloudEntity(request, true)
                     .thenApply(cloudList -> {
-                        List<CompletionStage<List<ResImageInfo>>> futures = cloudList.stream().map(cloud ->
-                                httpGet("/images", ResImages.class, cloud)
+                        List<CompletionStage<List<ResSnapshotInfo>>> futures = cloudList.stream().map(cloud ->
+                                httpGet("/snapshots", ResSnapshots.class, cloud)
                                         .thenApply(resData -> {
-                                            List<ResImageInfo> images = resData.getData().getImages();
-                                            addCloudInfo(images, cloud);
-                                            return images;
+                                            List<ResSnapshotInfo> snapshots = resData.getData().getSnapshots();
+                                            addCloudInfo(snapshots, cloud);
+                                            return snapshots;
                                         }).exceptionally(e -> dealException(e, cloud))
                         ).collect(toList());
-                        List<ResImageInfo> images = aggregateList(this.joinRes(futures));
-                        return okFormat(OK.value(), new ResImages(images), response);
+                        List<ResSnapshotInfo> snapshots = aggregateList(this.joinRes(futures));
+                        return okFormat(OK.value(), new ResSnapshots(snapshots), response);
                     }).exceptionally(e -> badFormat(e, response));
         }
     }
