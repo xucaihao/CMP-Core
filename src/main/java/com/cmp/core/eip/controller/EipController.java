@@ -39,7 +39,7 @@ public class EipController extends BaseController {
                             })
             ).exceptionally(e -> badFormat(e, response));
         } else {
-            return getAllCloudEntity(request)
+            return getAllCloudEntity(request, true)
                     .thenApply(cloudList -> {
                         List<CompletionStage<List<EipAddressInfo>>> futures = cloudList.stream().map(cloud ->
                                 httpGet(CMP_V1 + "/eipAddresses/regions/" + regionId, ResEipAddresses.class, cloud)

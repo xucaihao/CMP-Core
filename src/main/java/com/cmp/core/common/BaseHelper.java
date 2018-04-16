@@ -76,10 +76,11 @@ public interface BaseHelper {
     /**
      * 获取所有已对接云平台
      *
+     * @param flag    根据用户映射筛选云
      * @param request 请求
      * @return 所有已对接云平台
      */
-    CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request);
+    CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request, boolean flag);
 
 //    /**
 //     * 通过CmpUserId获取cloud用户id

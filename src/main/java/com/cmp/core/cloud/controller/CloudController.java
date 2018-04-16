@@ -116,7 +116,7 @@ public class CloudController extends BaseController {
     public CompletionStage<JsonNode> describeClouds(
             final HttpServletRequest request,
             final HttpServletResponse response) {
-        return getAllCloudEntity(request)
+        return getAllCloudEntity(request, false)
                 .thenApply(clouds -> okFormat(OK.value(), new ResCloudsEntity(clouds), response))
                 .exceptionally(e -> badFormat(e, response));
     }

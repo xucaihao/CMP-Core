@@ -88,11 +88,12 @@ public class BaseController {
     /**
      * 获取所有已对接云平台
      *
+     * @param flag    根据用户映射筛选云
      * @param request 请求
      * @return 所有已对接云平台
      */
-    protected CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request) {
-        return baseHelper.getAllCloudEntity(request);
+    protected CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request, boolean flag) {
+        return baseHelper.getAllCloudEntity(request, flag);
     }
 
 //    /**

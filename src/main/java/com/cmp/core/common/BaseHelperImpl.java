@@ -212,11 +212,12 @@ public class BaseHelperImpl implements BaseHelper {
     /**
      * 获取所有已对接云平台
      *
+     * @param flag    根据用户映射筛选云
      * @param request 请求
      * @return 所有已对接云平台
      */
     @Override
-    public CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request) {
+    public CompletionStage<List<CloudEntity>> getAllCloudEntity(HttpServletRequest request, boolean flag) {
         CompletableFuture<CmpUser> cmpUserFuture = getCmpUserEntity(request).toCompletableFuture();
         CompletableFuture<List<CloudEntity>> cloudsFuture = cloudService.describeClouds().toCompletableFuture();
         CompletableFuture<List<CloudTypeEntity>> cloudTypesFuture = cloudService.describeCloudTypes().toCompletableFuture();
@@ -239,25 +240,21 @@ public class BaseHelperImpl implements BaseHelper {
                         clouds = clouds.stream()
                                 .filter(cloud -> cloudTypeMap.containsKey(cloud.getCloudType()))
                                 .collect(toList());
-                        switch (cmpUser.getRole()) {
-                            case USER:
-                                String cmpUserId = cmpUser.getUserId();
-                                //将用户映射关系以cloudId作为key存入Map中
-                                Map<String, UserMappingEntity> userMappingMap =
-                                        userService.describeUserMappings(cmpUserId)
-                                                .stream()
-                                                .collect(toMap(UserMappingEntity::getCloudId, Function.identity()));
-                                //筛选出请求用户存在映射关系的云列表
-                                clouds = clouds.stream()
-                                        .filter(cloud -> userMappingMap.containsKey(cloud.getCloudId()))
-                                        .peek(cloud -> {
-                                            String authInfo = userMappingMap.get(cloud.getCloudId()).getAuthInfo();
-                                            cloud.setAuthInfo(authInfo);
-                                            cloud.setRequest(request);
-                                        }).collect(toList());
-                                break;
-                            case MANAGER:
-                                break;
+                        if (flag) {
+                            String cmpUserId = cmpUser.getUserId();
+                            //将用户映射关系以cloudId作为key存入Map中
+                            Map<String, UserMappingEntity> userMappingMap =
+                                    userService.describeUserMappings(cmpUserId)
+                                            .stream()
+                                            .collect(toMap(UserMappingEntity::getCloudId, Function.identity()));
+                            //筛选出请求用户存在映射关系的云列表
+                            clouds = clouds.stream()
+                                    .filter(cloud -> userMappingMap.containsKey(cloud.getCloudId()))
+                                    .peek(cloud -> {
+                                        String authInfo = userMappingMap.get(cloud.getCloudId()).getAuthInfo();
+                                        cloud.setAuthInfo(authInfo);
+                                        cloud.setRequest(request);
+                                    }).collect(toList());
                         }
                         return clouds;
                     } catch (Exception e) {
