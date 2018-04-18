@@ -371,7 +371,10 @@ public class CloudController extends BaseController {
             resCloud.setCloudName(reqCloud.getCloudName());
             resCloud.setCloudType(reqCloud.getCloudType());
             resCloud.setVisibility(reqCloud.getVisibility());
-            resCloud.setDescription(reqCloud.getDescription());
+            resCloud.setDescription("");
+            if (null != reqCloud.getDescription()) {
+                resCloud.setDescription(reqCloud.getDescription());
+            }
             resCloud.setStatus("active");
             switch (reqCloud.getVisibility()) {
                 case PUBLIC:
