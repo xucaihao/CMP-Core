@@ -43,6 +43,10 @@ public enum ErrorEnum {
     ERR_UPDATE_USER(114, "cloudmp.core.user.updateUserError", "修改用户失败"),
     ERR_DELETE_USER(115, "cloudmp.core.user.deleteUserError", "删除用户失败"),
 
+    //##########instance错误code(151——200)##########
+    ERR_CLOSE_INSTANCE_BODY(151, "cloudmp.core.instance.closeInstanceBodyError", "关闭主机请求体错误"),
+    ERR_START_INSTANCE_BODY(152, "cloudmp.core.instance.startInstanceBodyError", "启动主机请求体错误"),
+
     ERR_DEFAULT_CODE(0, "cloudmp.core.cloud.unknownError", "未知错误");
 
 
