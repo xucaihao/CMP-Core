@@ -56,6 +56,11 @@
         <result column="cloud_id" property="cloudId"/>
     </resultMap>
 
+    <!-- 查询映射关系列表 -->
+    <select id="describeUserMappings" resultMap="UserMappingEntity">
+        select * from tbl_user_mapping
+    </select>
+
     <!-- 根据id查询映射关系 -->
     <select id="describeUserMappingById" parameterType="String" resultMap="UserMappingEntity">
         select * from tbl_user_mapping where id=#{mappingId}

@@ -52,6 +52,8 @@ public interface UserDao {
      */
     void deleteUser(String userId);
 
+    List<UserMappingEntity> describeUserMappings();
+
     /**
      * 根据id查询映射关系
      *

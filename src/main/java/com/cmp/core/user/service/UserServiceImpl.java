@@ -162,6 +162,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 查询用户映射列表
+     *
+     * @return 用户映射列表
+     */
+    @Override
+    public List<UserMappingEntity> describeUserMappings() {
+        return userDao.describeUserMappings();
+    }
+
+    /**
      * 根据id查询映射关系
      *
      * @param mappingId 映射id

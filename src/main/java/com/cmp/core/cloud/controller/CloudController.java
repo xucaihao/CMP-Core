@@ -378,9 +378,9 @@ public class CloudController extends BaseController {
             resCloud.setStatus("active");
             switch (reqCloud.getVisibility()) {
                 case PUBLIC:
-                    resCloud.setCloudProtocol("defalut");
-                    resCloud.setCloudIp("defalut");
-                    resCloud.setCloudPort("defalut");
+                    resCloud.setCloudProtocol("default");
+                    resCloud.setCloudIp("default");
+                    resCloud.setCloudPort("default");
                     break;
                 case PRIVATE:
                     resCloud.setCloudProtocol("http");

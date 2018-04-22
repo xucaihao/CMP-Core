@@ -226,6 +226,22 @@ public class UserController extends BaseController {
     }
 
     /**
+     * 查询映射关系列表
+     *
+     * @param response http响应
+     * @return 映射关系列表
+     */
+    @RequestMapping("/mappings")
+    @ResponseBody
+    public CompletionStage<JsonNode> describeMappings(
+            final HttpServletResponse response) {
+        return CompletableFuture.supplyAsync(() ->
+                userService.describeUserMappings())
+                .thenApply(mappings -> okFormat(OK.value(), new ResUserMappings(mappings), response))
+                .exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
      * 根据用户ID查询映射关系列表
      *
      * @param response http响应

@@ -56,6 +56,13 @@ public interface UserService {
     CompletionStage<Boolean> deleteUser(String userId);
 
     /**
+     * 查询用户映射列表
+     *
+     * @return 用户映射列表
+     */
+    List<UserMappingEntity> describeUserMappings();
+
+    /**
      * 根据id查询映射关系
      *
      * @param mappingId 映射id
