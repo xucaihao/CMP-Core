@@ -34,6 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.cmp.core.common.ErrorEnum.*;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.*;
 
 @Controller
@@ -235,9 +236,18 @@ public class UserController extends BaseController {
     @ResponseBody
     public CompletionStage<JsonNode> describeMappings(
             final HttpServletResponse response) {
-        return CompletableFuture.supplyAsync(() ->
-                userService.describeUserMappings())
-                .thenApply(mappings -> okFormat(OK.value(), new ResUserMappings(mappings), response))
+        return CompletableFuture.supplyAsync(() -> {
+            List<CompletionStage<UserMappingEntity>> futures = userService.describeUserMappings().stream()
+                    .map(mapping -> {
+                        String cloudId = mapping.getCloudId();
+                        return cloudService.describeCloudById(cloudId)
+                                .thenApply(cloud -> {
+                                    mapping.setCloudName(cloud.getCloudName());
+                                    return mapping;
+                                }).exceptionally(this::dealException);
+                    }).collect(toList());
+            return this.joinRes(futures);
+        }).thenApply(mappings -> okFormat(OK.value(), new ResUserMappings(mappings), response))
                 .exceptionally(e -> badFormat(e, response));
     }
 

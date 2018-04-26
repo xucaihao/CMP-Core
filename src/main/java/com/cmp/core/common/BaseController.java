@@ -278,6 +278,14 @@ public class BaseController {
         return JsonUtil.stringToObject(msg, JsonNode.class);
     }
 
+    protected <T> T dealException(Throwable e) {
+        final StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        logger.error("get multi thread task result error, occur in :{}", trace[2].getFileName()
+                + " lineNum: " + trace[2].getLineNumber());
+        logger.error("get multi thread task result error, e :{}", e.getCause());
+        return null;
+    }
+
     protected <T> T dealException(Throwable e, CloudEntity cloud) {
         final StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         logger.error("find multi clouds result error, occur in :{}", trace[2].getFileName()
