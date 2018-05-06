@@ -3,14 +3,15 @@ package com.cmp.core.instance.controller;
 import com.alibaba.dubbo.common.utils.IOUtils;
 import com.cmp.core.common.BaseController;
 import com.cmp.core.common.CoreException;
-import com.cmp.core.common.ErrorEnum;
 import com.cmp.core.common.JsonUtil;
 import com.cmp.core.instance.model.req.ReqCloseInstance;
 import com.cmp.core.instance.model.req.ReqStartInstance;
+import com.cmp.core.instance.model.res.ResInstance;
 import com.cmp.core.instance.model.res.ResInstanceInfo;
 import com.cmp.core.instance.model.res.ResInstances;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -69,6 +70,30 @@ public class instanceController extends BaseController {
                         return okFormat(OK.value(), new ResInstances(instances), response);
                     }).exceptionally(e -> badFormat(e, response));
         }
+    }
+
+    /**
+     * 查询主机列表
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 主机列表
+     */
+    @RequestMapping("{regionId}/instances/{instanceId}")
+    @ResponseBody
+    public CompletionStage<JsonNode> describeInstanceAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String regionId,
+            @PathVariable final String instanceId) {
+        return getCloudEntity(request).thenCompose(cloud ->
+                httpGet("/" + regionId + "/instances/" + instanceId, ResInstance.class, cloud)
+                        .thenApply(resData -> {
+                            ResInstanceInfo instance = resData.getData().getInstance();
+                            addCloudInfo(instance, cloud);
+                            return okFormat(resData.getCode(), new ResInstance(instance), response);
+                        })
+        ).exceptionally(e -> badFormat(e, response));
     }
 
     /**
