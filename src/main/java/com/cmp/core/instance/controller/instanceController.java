@@ -3,16 +3,16 @@ package com.cmp.core.instance.controller;
 import com.alibaba.dubbo.common.utils.IOUtils;
 import com.cmp.core.common.BaseController;
 import com.cmp.core.common.CoreException;
-import com.cmp.core.common.ErrorEnum;
 import com.cmp.core.common.JsonUtil;
 import com.cmp.core.instance.model.req.ReqCloseInstance;
 import com.cmp.core.instance.model.req.ReqModifyInstance;
 import com.cmp.core.instance.model.req.ReqStartInstance;
+import com.cmp.core.instance.model.res.ResInstance;
 import com.cmp.core.instance.model.res.ResInstanceInfo;
 import com.cmp.core.instance.model.res.ResInstances;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -27,9 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.cmp.core.common.Constance.HEADER_CLOUD_ID;
-import static com.cmp.core.common.ErrorEnum.ERR_CLOSE_INSTANCE_BODY;
-import static com.cmp.core.common.ErrorEnum.ERR_MODIFY_INSTANCE_NAME_BODY;
-import static com.cmp.core.common.ErrorEnum.ERR_START_INSTANCE_BODY;
+import static com.cmp.core.common.ErrorEnum.*;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -72,6 +70,30 @@ public class instanceController extends BaseController {
                         return okFormat(OK.value(), new ResInstances(instances), response);
                     }).exceptionally(e -> badFormat(e, response));
         }
+    }
+
+    /**
+     * 查询指定主机
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 指定主机
+     */
+    @RequestMapping("{regionId}/instances/{instanceId}")
+    @ResponseBody
+    public CompletionStage<JsonNode> describeInstanceAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable final String regionId,
+            @PathVariable final String instanceId) {
+        return getCloudEntity(request).thenCompose(cloud ->
+                httpGet("/" + regionId + "/instances/" + instanceId, ResInstance.class, cloud)
+                        .thenApply(resData -> {
+                            ResInstanceInfo instance = resData.getData().getInstance();
+                            addCloudInfo(instance, cloud);
+                            return okFormat(resData.getCode(), new ResInstance(instance), response);
+                        })
+        ).exceptionally(e -> badFormat(e, response));
     }
 
     /**
