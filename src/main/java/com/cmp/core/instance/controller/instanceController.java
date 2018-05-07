@@ -180,6 +180,34 @@ public class instanceController extends BaseController {
         ).exceptionally(e -> badFormat(e, response));
     }
 
+    /**
+     * 重置实例密码
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 操作结果
+     * @throws IOException 异常
+     */
+    @PutMapping("/instances/resetPassword")
+    @ResponseBody
+    public CompletionStage<JsonNode> resetInstancesPassword(
+            final HttpServletRequest request,
+            final HttpServletResponse response) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqModifyInstance reqModifyInstance = JsonUtil.stringToObject(body, ReqModifyInstance.class);
+        return getCloudEntity(request).thenCompose(cloud ->
+                checkResetPasswordBody(reqModifyInstance).thenCompose(flag -> {
+                    if (!flag) {
+                        throw new CoreException(ERR_RESET_INSTANCE_PASSWORD_BODY);
+                    } else {
+                        return httpPut("/instances/resetPassword", JsonUtil.objectToString(reqModifyInstance), cloud)
+                                .thenApply(resData -> okFormat(resData.getCode(), null, response));
+                    }
+                })
+        ).exceptionally(e -> badFormat(e, response));
+    }
+
     private CompletionStage<Boolean> checkCloseInstanceBody(ReqCloseInstance body) {
         return CompletableFuture.supplyAsync(() ->
                 (null != body.getInstanceId()
@@ -199,6 +227,14 @@ public class instanceController extends BaseController {
                 (null != body.getInstanceId()
                         && null != body.getRegionId()
                         && null != body.getInstanceName())
+        );
+    }
+
+    private CompletionStage<Boolean> checkResetPasswordBody(ReqModifyInstance body) {
+        return CompletableFuture.supplyAsync(() ->
+                (null != body.getInstanceId()
+                        && null != body.getRegionId()
+                        && null != body.getPassword())
         );
     }
 
