@@ -6,6 +6,7 @@ import com.cmp.core.common.CoreException;
 import com.cmp.core.common.JsonUtil;
 import com.cmp.core.instance.model.req.ReqCloseInstance;
 import com.cmp.core.instance.model.req.ReqModifyInstance;
+import com.cmp.core.instance.model.req.ReqRebootInstance;
 import com.cmp.core.instance.model.req.ReqStartInstance;
 import com.cmp.core.instance.model.res.ResInstance;
 import com.cmp.core.instance.model.res.ResInstanceInfo;
@@ -153,6 +154,34 @@ public class instanceController extends BaseController {
     }
 
     /**
+     * 重启实例
+     *
+     * @param request  http请求
+     * @param response http响应
+     * @return 操作结果
+     * @throws IOException 异常
+     */
+    @RequestMapping("/instances/reboot")
+    @ResponseBody
+    public CompletionStage<JsonNode> rebootInstance(
+            final HttpServletRequest request,
+            final HttpServletResponse response) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        String body = IOUtils.read(reader);
+        ReqRebootInstance reqRebootInstance = JsonUtil.stringToObject(body, ReqRebootInstance.class);
+        return getCloudEntity(request).thenCompose(cloud ->
+                checkRebootInstanceBody(reqRebootInstance).thenCompose(flag -> {
+                    if (!flag) {
+                        throw new CoreException(ERR_REBOOT_INSTANCE_BODY);
+                    } else {
+                        return httpPut("/instances/reboot", JsonUtil.objectToString(reqRebootInstance), cloud)
+                                .thenApply(resData -> okFormat(resData.getCode(), null, response));
+                    }
+                })
+        ).exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
      * 修改主机名称
      *
      * @param request  http请求
@@ -216,6 +245,13 @@ public class instanceController extends BaseController {
     }
 
     private CompletionStage<Boolean> checkStartInstanceBody(ReqStartInstance body) {
+        return CompletableFuture.supplyAsync(() ->
+                (null != body.getInstanceId()
+                        && null != body.getRegionId())
+        );
+    }
+
+    private CompletionStage<Boolean> checkRebootInstanceBody(ReqRebootInstance body) {
         return CompletableFuture.supplyAsync(() ->
                 (null != body.getInstanceId()
                         && null != body.getRegionId())

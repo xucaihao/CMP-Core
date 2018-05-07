@@ -46,8 +46,9 @@ public enum ErrorEnum {
     //##########instance错误code(151——200)##########
     ERR_CLOSE_INSTANCE_BODY(151, "cloudmp.core.instance.closeInstanceBodyError", "关闭主机请求体错误"),
     ERR_START_INSTANCE_BODY(152, "cloudmp.core.instance.startInstanceBodyError", "启动主机请求体错误"),
-    ERR_MODIFY_INSTANCE_NAME_BODY(153, "cloudmp.core.instance.modifyInstanceNameBodyError", "修改主机名称请求体错误"),
-    ERR_RESET_INSTANCE_PASSWORD_BODY(154, "cloudmp.core.instance.resetInstancePasswordBodyError", "重置主机密码请求体错误"),
+    ERR_REBOOT_INSTANCE_BODY(153, "cloudmp.core.instance.rebootInstanceBodyError", "重启主机请求体错误"),
+    ERR_MODIFY_INSTANCE_NAME_BODY(154, "cloudmp.core.instance.modifyInstanceNameBodyError", "修改主机名称请求体错误"),
+    ERR_RESET_INSTANCE_PASSWORD_BODY(155, "cloudmp.core.instance.resetInstancePasswordBodyError", "重置主机密码请求体错误"),
 
     ERR_DEFAULT_CODE(0, "cloudmp.core.cloud.unknownError", "未知错误");
 
