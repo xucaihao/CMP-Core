@@ -68,7 +68,7 @@ public class ImageController extends BaseController {
     }
 
     /**
-     * 重启实例
+     * 创建镜像
      *
      * @param request  http请求
      * @param response http响应
