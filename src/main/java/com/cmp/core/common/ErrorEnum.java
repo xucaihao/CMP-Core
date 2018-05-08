@@ -50,6 +50,9 @@ public enum ErrorEnum {
     ERR_MODIFY_INSTANCE_NAME_BODY(154, "cloudmp.core.instance.modifyInstanceNameBodyError", "修改主机名称请求体错误"),
     ERR_RESET_INSTANCE_PASSWORD_BODY(155, "cloudmp.core.instance.resetInstancePasswordBodyError", "重置主机密码请求体错误"),
 
+    //##########image错误code(201——250)##########
+    ERR_CREATE_IMAGE_BODY(201, "cloudmp.core.image.createImageBodyError", "创建镜像请求体错误"),
+
     ERR_DEFAULT_CODE(0, "cloudmp.core.cloud.unknownError", "未知错误");
 
 
