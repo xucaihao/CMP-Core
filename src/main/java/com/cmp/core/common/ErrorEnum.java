@@ -56,6 +56,9 @@ public enum ErrorEnum {
     //##########snapshot错误code(251——300)##########
     ERR_CREATE_SNAPSHOT_BODY(251, "cloudmp.core.snapshot.createSnapshotBodyError", "创建快照请求体错误"),
 
+    //##########disk错误code(301——350)##########
+    ERR_MODIFY_DISK_NAME_BODY(301, "cloudmp.core.disk.modifyDiskNameBodyError", "修改硬盘名称请求体错误"),
+
     ERR_DEFAULT_CODE(0, "cloudmp.core.cloud.unknownError", "未知错误");
 
 
