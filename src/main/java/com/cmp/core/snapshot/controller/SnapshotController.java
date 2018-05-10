@@ -5,13 +5,12 @@ import com.cmp.core.common.BaseController;
 import com.cmp.core.common.CoreException;
 import com.cmp.core.common.JsonUtil;
 import com.cmp.core.snapshot.model.req.ReqCreSnapshot;
+import com.cmp.core.snapshot.model.res.ResSnapshot;
 import com.cmp.core.snapshot.model.res.ResSnapshotInfo;
 import com.cmp.core.snapshot.model.res.ResSnapshots;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,11 +31,11 @@ import static org.springframework.http.HttpStatus.OK;
 public class SnapshotController extends BaseController {
 
     /**
-     * 查询镜像列表
+     * 查询快照列表
      *
      * @param request  http请求
      * @param response http响应
-     * @return 镜像列表
+     * @return 快照列表
      */
     @RequestMapping("/snapshots")
     @ResponseBody
@@ -69,6 +68,32 @@ public class SnapshotController extends BaseController {
     }
 
     /**
+     * 查询指定快照
+     *
+     * @param request    http请求 http请求
+     * @param response   http响应 http响应
+     * @param regionId   区域id
+     * @param snapshotId 快照id
+     * @return 指定快照信息
+     */
+    @RequestMapping("/{regionId}/snapshots/{snapshotId}")
+    @ResponseBody
+    public CompletionStage<JsonNode> describeSnapshotAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable String regionId,
+            @PathVariable String snapshotId) {
+        return getCloudEntity(request).thenCompose(cloud ->
+                httpGet("/" + regionId + "/snapshots/" + snapshotId, ResSnapshot.class, cloud)
+                        .thenApply(resData -> {
+                            ResSnapshotInfo snapshot = resData.getData().getSnapshot();
+                            addCloudInfo(snapshot, cloud);
+                            return okFormat(resData.getCode(), new ResSnapshot(snapshot), response);
+                        })
+        ).exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
      * 创建快照
      *
      * @param request  http请求
@@ -94,6 +119,28 @@ public class SnapshotController extends BaseController {
                     }
                 })
         ).exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
+     * 删除快照
+     *
+     * @param request    http请求 http请求
+     * @param response   http响应 http响应
+     * @param regionId   区域id
+     * @param snapshotId 快照id
+     * @return 操作结果
+     */
+    @DeleteMapping("/{regionId}/snapshots/{snapshotId}")
+    @ResponseBody
+    public CompletionStage<JsonNode> deleteSnapshot(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable String regionId,
+            @PathVariable String snapshotId) {
+        return getCloudEntity(request)
+                .thenCompose(cloud -> httpDel("/" + regionId + "/snapshots/" + snapshotId, cloud))
+                .thenApply(x -> okFormat(x.getCode(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     private CompletionStage<Boolean> checkCreateSnapshotBody(ReqCreSnapshot body) {
