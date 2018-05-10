@@ -5,13 +5,12 @@ import com.cmp.core.common.BaseController;
 import com.cmp.core.common.CoreException;
 import com.cmp.core.common.JsonUtil;
 import com.cmp.core.image.model.req.ReqCreImage;
+import com.cmp.core.image.model.res.ResImage;
 import com.cmp.core.image.model.res.ResImageInfo;
 import com.cmp.core.image.model.res.ResImages;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -68,6 +67,32 @@ public class ImageController extends BaseController {
     }
 
     /**
+     * 查询指定镜像
+     *
+     * @param request  http请求 http请求
+     * @param response http响应 http响应
+     * @param regionId 区域id
+     * @param imageId  镜像id
+     * @return 指定镜像信息
+     */
+    @RequestMapping("/{regionId}/images/{imageId}")
+    @ResponseBody
+    public CompletionStage<JsonNode> describeImageAttribute(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable String regionId,
+            @PathVariable String imageId) {
+        return getCloudEntity(request).thenCompose(cloud ->
+                httpGet("/" + regionId + "/images/" + imageId, ResImage.class, cloud)
+                        .thenApply(resData -> {
+                            ResImageInfo image = resData.getData().getImage();
+                            addCloudInfo(image, cloud);
+                            return okFormat(resData.getCode(), new ResImage(image), response);
+                        })
+        ).exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
      * 创建镜像
      *
      * @param request  http请求
@@ -93,6 +118,28 @@ public class ImageController extends BaseController {
                     }
                 })
         ).exceptionally(e -> badFormat(e, response));
+    }
+
+    /**
+     * 删除镜像
+     *
+     * @param request  http请求 http请求
+     * @param response http响应 http响应
+     * @param regionId 区域id
+     * @param imageId  镜像id
+     * @return 操作结果
+     */
+    @DeleteMapping("/{regionId}/images/{imageId}")
+    @ResponseBody
+    public CompletionStage<JsonNode> deleteImage(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            @PathVariable String regionId,
+            @PathVariable String imageId) {
+        return getCloudEntity(request)
+                .thenCompose(cloud -> httpDel("/" + regionId + "/images/" + imageId, cloud))
+                .thenApply(x -> okFormat(x.getCode(), null, response))
+                .exceptionally(e -> badFormat(e, response));
     }
 
     private CompletionStage<Boolean> checkCreateImageBody(ReqCreImage body) {
