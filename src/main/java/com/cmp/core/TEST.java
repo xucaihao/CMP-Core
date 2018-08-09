@@ -6,5 +6,7 @@ public class TEST {
         System.out.print("new");
         System.out.print("");
         System.out.println();
+        System.out.printf("old");
+        System.out.printf("new");
     }
 }
