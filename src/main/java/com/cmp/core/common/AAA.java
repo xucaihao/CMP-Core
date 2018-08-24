@@ -9,4 +9,5 @@ package com.cmp.core.common;
 public class AAA {
 
     public aaa;
+    bbb11
 }
